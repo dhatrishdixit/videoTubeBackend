@@ -17,6 +17,11 @@ app.use(express.urlencoded({
 }));
 app.use(express.static('public'));
 
+// importing routes 
+import userRouter from './routes/user.routes.js';
+
+// activating routes 
+app.use('/api/v1/users',userRouter);
  
 
 export { app };

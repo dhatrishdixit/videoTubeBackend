@@ -16,6 +16,7 @@ const uploadOnCloudinary = async (localFilePath) =>{
      if(!localFilePath){
         console.log('file path not found');
         return null ;
+        
      }
      const response = await cloudinary.uploader.upload(localFilePath,{
         resource_type:'auto'
@@ -23,7 +24,10 @@ const uploadOnCloudinary = async (localFilePath) =>{
      console.log("file is successfully uploaded: ",response.url);
      
      // after file is successfully uploaded unlink the file in localstorage or operating system 
-     if(response) fs.unlinkSync(localFilePath);
+     
+   console.log("response returned from cloudinary ::",response)
+
+   fs.unlinkSync(localFilePath)
      return response;
 
    } catch (error) {
