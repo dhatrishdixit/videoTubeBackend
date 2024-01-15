@@ -36,13 +36,25 @@ const registerUser = asyncHandler(async(req,res)=>{
     }
     console.log('body: ',req.body);
     console.log('file: ',req.files);
+    if(!req.files.avatar){
+        throw new ApiError(409,'avatar file is required')
+    }
     const avatarLocalPath = req.files?.avatar[0]?.path;
     
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  //  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // here when we get req.files and dont get coverImage from  it we get the error of undefined 
+  // aur yahan pur agar coverimage nhi diya hai toh woh toh undefined hoga aur hum usko property yani zeroth index ko access karenge toh milega cannot access property of undefined 
+  // ? this checks only the left side of it and if it is undefined then it prevents the error('cant access property of undefined') and gives out undefined
+ 
+  //  console.log("__________________",coverImageLocalPath)
+    let coverImageLocalPath;
+    if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
+        coverImageLocalPath = req.files.coverImage[0].path
+    }
     if(!avatarLocalPath){
         throw new ApiError(409,'avatar file is required')
     }
-    console.log(coverImageLocalPath)
+
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     let coverImage;
     if(coverImageLocalPath){
