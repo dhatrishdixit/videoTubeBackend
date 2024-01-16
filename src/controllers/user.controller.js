@@ -18,6 +18,7 @@ async function generateRefreshAndAccessToken(userId){
         return {accessToken,refreshToken};
     }
     catch(err){
+        console.log('ERROR : ',err)
         throw new ApiError(500,'not able to generate tokens ')
     }
 
@@ -113,15 +114,18 @@ const registerUser = asyncHandler(async(req,res)=>{
 // }
 
 const loginUser = asyncHandler(async(req,res)=>{
-    // take email , password 
-    //check if user exists in the database 
-    // now check password
-    // if user exists return a successfull statement and give accesstoken to it 
+     // req body -> data
+    // username or email
+    //find the user
+    //password check
+    //access and referesh token
+    //send cookie
+
 
     const {email,username,password} = req.body ;
     if(!(email || user)) throw new ApiError(400,' either username or email both required')
     
-    const user = User.findOne({
+    const user =await User.findOne({
         $or:[{username},{email}]
     })
     if(!user) throw new ApiError(404,'user not found');
@@ -154,6 +158,8 @@ const loginUser = asyncHandler(async(req,res)=>{
     )
 
 })
+
+
 
 const logoutUser = asyncHandler(async (req,res)=>{
       const userId = req.user._id ;
