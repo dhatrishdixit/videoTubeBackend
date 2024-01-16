@@ -125,8 +125,8 @@ const loginUser = asyncHandler(async(req,res)=>{
         $or:[{username},{email}]
     })
     if(!user) throw new ApiError(404,'user not found');
-    
-    const passwordCheck = user.isPasswordCorrect(password);
+    console.log(user)
+    const passwordCheck = await user.isPasswordCorrect(password);
 
     if(!passwordCheck) throw new ApiError(401,'password is incorrect')
     
