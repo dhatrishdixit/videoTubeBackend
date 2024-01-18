@@ -36,7 +36,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     // return res
 
     const { username,fullName,email,password } = req.body ;
-    console.log(req.body)
+   // console.log(req.body)
 
     if([username,fullName,email,password].some(field => field?.trim() == "")){
         throw new ApiError(400,"all fields should be filled")
@@ -71,8 +71,8 @@ const registerUser = asyncHandler(async(req,res)=>{
       
        throw new ApiError(409,'user already exists in the dataBase')
     }
-    console.log('body: ',req.body);
-    console.log('file: ',req.files);
+    // console.log('body: ',req.body);
+    // console.log('file: ',req.files);
    
     
   //  const coverImageLocalPath = req.files?.coverImage[0]?.path;
@@ -129,14 +129,14 @@ const loginUser = asyncHandler(async(req,res)=>{
 
 
     const {email,username,password} = req.body ;
-    console.log(req.body)
+   // console.log(req.body)
     if(!(email || username)) throw new ApiError(400,' either username or email both required')
     
     const user =await User.findOne({
         $or:[{username},{email}]
     })
     if(!user) throw new ApiError(404,'user not found');
-    console.log(user)
+   // console.log(user)
     const passwordCheck = await user.isPasswordCorrect(password);
 
     if(!passwordCheck) throw new ApiError(401,'password is incorrect')
