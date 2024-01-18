@@ -3,7 +3,7 @@ import { ApiError } from '../utils/apiError.js';
 import { User } from '../models/user.model.js'
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/apiResponse.js';
-
+import fs from 'fs'
 async function generateRefreshAndAccessToken(userId){
 
     try{
@@ -51,23 +51,10 @@ const registerUser = asyncHandler(async(req,res)=>{
         }
      ]   
     })
-
-    if(existedUser){
-       throw new ApiError(409,'user already exists in the dataBase')
-    }
-    console.log('body: ',req.body);
-    console.log('file: ',req.files);
     if(!req.files.avatar){
         throw new ApiError(409,'avatar file is required')
     }
     const avatarLocalPath = req.files?.avatar[0]?.path;
-    
-  //  const coverImageLocalPath = req.files?.coverImage[0]?.path;
-  // here when we get req.files and dont get coverImage from  it we get the error of undefined 
-  // aur yahan pur agar coverimage nhi diya hai toh woh toh undefined hoga aur hum usko property yani zeroth index ko access karenge toh milega cannot access property of undefined 
-  // ? this checks only the left side of it and if it is undefined then it prevents the error('cant access property of undefined') and gives out undefined
- 
-  //  console.log("__________________",coverImageLocalPath)
     let coverImageLocalPath;
     if(req.files && Array.isArray(req.files.coverImage) && req.files.coverImage.length > 0){
         coverImageLocalPath = req.files.coverImage[0].path
@@ -75,6 +62,25 @@ const registerUser = asyncHandler(async(req,res)=>{
     if(!avatarLocalPath){
         throw new ApiError(409,'avatar file is required')
     }
+  
+    if(existedUser){
+       fs.unlinkSync(req.files?.avatar[0]?.path)  
+       if(req.files.converImage){
+         fs.unlinkSync(req.files?.coverImage[0]?.path)
+       }
+      
+       throw new ApiError(409,'user already exists in the dataBase')
+    }
+    console.log('body: ',req.body);
+    console.log('file: ',req.files);
+   
+    
+  //  const coverImageLocalPath = req.files?.coverImage[0]?.path;
+  // here when we get req.files and dont get coverImage from  it we get the error of undefined 
+  // aur yahan pur agar coverimage nhi diya hai toh woh toh undefined hoga aur hum usko property yani zeroth index ko access karenge toh milega cannot access property of undefined 
+  // ? this checks only the left side of it and if it is undefined then it prevents the error('cant access property of undefined') and gives out undefined
+ 
+  //  console.log("__________________",coverImageLocalPath)
 
     const avatar = await uploadOnCloudinary(avatarLocalPath)
     let coverImage;
@@ -123,7 +129,8 @@ const loginUser = asyncHandler(async(req,res)=>{
 
 
     const {email,username,password} = req.body ;
-    if(!(email || user)) throw new ApiError(400,' either username or email both required')
+    console.log(req.body)
+    if(!(email || username)) throw new ApiError(400,' either username or email both required')
     
     const user =await User.findOne({
         $or:[{username},{email}]
@@ -134,9 +141,9 @@ const loginUser = asyncHandler(async(req,res)=>{
 
     if(!passwordCheck) throw new ApiError(401,'password is incorrect')
     
-    const {accessToken,refreshToken} = generateRefreshAndAccessToken(user._id);
+    const {accessToken,refreshToken} = await generateRefreshAndAccessToken(user._id);
     
-    const loggedInUser = await User.findById(user._id).select('-password - refreshToken');
+    const loggedInUser = await User.findById(user._id).select('-password ');
 
     const options = {
         httpOnly:true,
@@ -151,7 +158,7 @@ const loginUser = asyncHandler(async(req,res)=>{
         new ApiResponse(
             200,
             {   
-                user:  loggedInUser, accessToken, refreshToken
+                user:  {...loggedInUser }, accessToken, refreshToken
             },
             'user registered successfully'
         )
