@@ -1,7 +1,7 @@
 import {asyncHandler} from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/apiError.js';
 import { User } from '../models/user.model.js'
-import { uploadOnCloudinary } from '../utils/cloudinary.js';
+import { deleteFromCloudinary, uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/apiResponse.js';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
@@ -268,10 +268,123 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
    }
 })
 
+const getCurrentUser = asyncHandler(async(req,res)=>{
+    try {
+        res
+        .status(201)
+        .json(
+            new ApiResponse(
+                201,
+                req.user,
+                "user fetched successfully"
+            )
+        )
+
+    } catch (error) {
+        res
+        .status(error?.statusCode)
+        .json({
+            message:error?.message
+        })
+    }
+});
+
+const updateCurrentUser = asyncHandler(async(req,res)=>{
+     try {
+         const {firstName,email} = req.body;
+         if(!firstName && !email) throw new ApiError(400,"nothing changed")
+         if(!req.user) throw new ApiError(400,"user not logged in");
+         const user = await User.findByIdAndUpdate(
+            req.user?._id,{
+                $set:{
+                    firstName,
+                    email
+                }
+            },
+            {
+                new:true
+            }
+         ).select("-password");
+
+         res
+         .status(201)
+         .json(
+            new ApiResponse(
+                201,
+                user,
+                "user updated"
+            )
+         )
+     } catch (error) {
+        res.status(error.statusCode)
+        .json({
+            message:error?.message
+        })
+     }
+      
+})
+
+const updateUserAvatar = asyncHandler(async(req,res)=>{
+    const avatarLocalPath = req.file?.path;
+   
+    if(!avatarLocalPath) throw new ApiError(400,"avatar is missing")
+
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    if(!avatar.url) throw new ApiError(500,"file failed to load in cloudinary");
+
+    
+    const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
+         $set:{
+               avatar:avatar.url,
+         }
+    },{
+        new:true
+     }).select("-password");
+     await deleteFromCloudinary(avatar.public_id);
+     res.status(200)
+     .json(
+        new ApiResponse(200
+            ,{
+                user:updatedUser
+            },
+            "avatar is updated and previous is deleted from cloudinary")
+     )
+});
+
+const updateCoverImage = asyncHandler(async(req,res)=>{
+    const coverImageLocalPath = req.file?.path;
+    if(!coverImageLocalPath) throw new ApiError(400,"coverImage is missing")
+
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    if(!coverImage.url) throw new ApiError(500,"file failed to load in cloudinary");
+
+    
+    const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
+         $set:{
+            coverImage:coverImage.url,
+         }
+    },{
+        new:true
+     }).select("-password");
+     await deleteFromCloudinary(coverImage.public_id);
+     res.status(200)
+     .json(
+        new ApiResponse(200
+            ,{
+                user:updatedUser
+            },
+            "coverImage is updated and previous is deleted from cloudinary")
+     )
+})
+
 export {
     registerUser,
     loginUser,
     logoutUser,
     refreshAccessTokenHandler,
-    changeCurrentPassword
+    changeCurrentPassword,
+    getCurrentUser,
+    updateCurrentUser,
+    updateUserAvatar,
+    updateCoverImage
 };
