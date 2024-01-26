@@ -45,7 +45,6 @@ const registerUser = asyncHandler(async(req,res)=>{
     // return res
 
     const { username,fullName,email,password } = req.body ;
-   // console.log(req.body)
 
     if([username,fullName,email,password].some(field => field?.trim() == "")){
         throw new ApiError(400,"all fields should be filled")
@@ -60,6 +59,7 @@ const registerUser = asyncHandler(async(req,res)=>{
         }
      ]   
     })
+   
     if(!req.files.avatar){
         throw new ApiError(409,'avatar file is required')
     }
@@ -180,7 +180,7 @@ const logoutUser = asyncHandler(async (req,res)=>{
         userId,
         {
            $unset:{
-            "refreshToken":1
+            refreshToken:1
            } 
         },{
             new:true
@@ -490,7 +490,7 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
     res
     .status(200)
     .json(new ApiResponse(
-        400
+        200
         ,user[0].watchHistory
         ,"watch history fetched perfectly"
         ))
