@@ -6,7 +6,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 
 const createTweet = asyncHandler(async (req, res) => {
-    //TODO: create tweet
+    // create tweet
     try {
        const {content} = req.body;
        if(!content) throw new ApiError(400,"content is missing")
@@ -30,7 +30,7 @@ const createTweet = asyncHandler(async (req, res) => {
 })
 
 const getUserTweets = asyncHandler(async (req, res) => {
-    // TODO: get user tweets
+    // get user tweets
    try {
      const ownerId = req.user._id;
      if(!ownerId) throw new ApiError(400,"owner is not logged in")
@@ -58,7 +58,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
 })
 
 const updateTweet = asyncHandler(async (req, res) => {
-    //TODO: update tweet
+    // update tweet
     try {
         const {tweetId} = req.params;
         if(!tweetId) throw new ApiError(400,"tweetId is absent");
@@ -87,7 +87,7 @@ const updateTweet = asyncHandler(async (req, res) => {
 })
 
 const deleteTweet = asyncHandler(async (req, res) => {
-    //TODO: delete tweet
+    // delete tweet
    try {
      const {tweetId} = req.params;
      if(!tweetId) throw new ApiError(400,"tweetId is absent");
