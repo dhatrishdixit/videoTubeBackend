@@ -25,7 +25,12 @@ const createTweet = asyncHandler(async (req, res) => {
        )
        
     } catch (error) {
-       throw new ApiError(error.statusCode||400,error.message || "error while creating a tweet") 
+        res
+        .status(error.statusCode)
+        .json({
+           status:error.statusCode,
+           message:error.message
+        })
     }
 })
 
@@ -53,7 +58,12 @@ const getUserTweets = asyncHandler(async (req, res) => {
          new ApiResponse(200,tweets,"tweets fetched successfully")
      )
    } catch (error) {
-    throw new ApiError(error.statusCode||400,error.message || "error while fetching tweets") 
+    res
+    .status(error.statusCode)
+    .json({
+       status:error.statusCode,
+       message:error.message
+    })
    }
 })
 
@@ -82,7 +92,12 @@ const updateTweet = asyncHandler(async (req, res) => {
              new ApiResponse(200,{oldContent,tweet},"tweet updated successfully")
             )
     } catch (error) {
-        throw new ApiError(error.statusCode||400,error.message || "error while updating a tweet") 
+        res
+        .status(error.statusCode)
+        .json({
+           status:error.statusCode,
+           message:error.message
+        })
      }
 })
 
@@ -101,7 +116,12 @@ const deleteTweet = asyncHandler(async (req, res) => {
          new ApiResponse(200,result,"tweet deleted successFully")
      )
    } catch (error) {
-      throw new ApiError(error.statusCode||400,error.message || "error while deleting a tweet") 
+    res
+    .status(error.statusCode)
+    .json({
+       status:error.statusCode,
+       message:error.message
+    })
    }
 })
 
