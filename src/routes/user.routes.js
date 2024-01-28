@@ -39,7 +39,7 @@ router.route('/get-current-user').get(verifyJWT,getCurrentUser);
 router.route('/update-user').patch(verifyJWT,updateCurrentUser);
 router.route('/update-avatar').patch(verifyJWT,upload.single('avatar'),updateUserAvatar);
 router.route('/update-coverImage').patch(verifyJWT,upload.single('coverImage'),updateCoverImage)
-router.route("/channel/:username").get(verifyJWT,getUserChannelProfile);
+router.route("/c/:username").get(verifyJWT,getUserChannelProfile);
 router.route("/watch-history").get(verifyJWT,getWatchHistory);
 
 export default router ;

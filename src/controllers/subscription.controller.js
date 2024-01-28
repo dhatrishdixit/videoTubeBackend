@@ -8,7 +8,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 
 const toggleSubscription = asyncHandler(async (req, res) => {
     const {channelId} = req.params
-    // TODO: toggle subscription
+    // toggle subscription
     if(!channelId) throw new ApiError(400,"no channel id");
     const user = req.user ;
     if(!user) throw new ApiError(400,"user not logged in");
