@@ -9,8 +9,129 @@ import fs from "fs";
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
-    const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
-    //TODO: get all videos based on query, sort, pagination
+   
+    // get all videos based on query, sort, pagination
+    // run a query -
+    // we also check for query i.e. through which we can search from search bar 
+    // also important take care of not showing videos with isPublic = false 
+    // first check for page and limit 
+    // sortBy - createdAt , views , duration 
+    // sortType - ascending , descending 
+    // sort by UserId i.e get all the videos of user
+    
+   try {
+     const { page, limit, query, sortBy, sortType, userId } = req.query
+     
+     const pageOptions = {
+         page : Number(page) || 0,
+         limit : Number(limit) || 10
+     }
+ 
+     let pipelineArr = [
+         {
+             $match:{
+                 isPublic:true
+             }
+         },  
+     ]
+
+     if(query){
+        pipelineArr.push(
+            {  
+               $match:{
+                title:{
+                    $regex:query,
+                    $options: 'i'
+                }
+               }
+            }
+        )
+     }
+ 
+     if(sortBy){
+         if(sortType == "ascending") {
+             pipelineArr.push(
+                 {
+                     $sort: {
+                       [sortBy]:1
+                     }
+                   }
+             )
+         }
+         if(sortType == "descending") {
+             pipelineArr.push(
+                 {
+                     $sort: {
+                       [sortBy]:-1
+                     }
+                   }
+             )
+         }
+     
+     }
+     if(userId){
+        pipelineArr.push(
+            {
+                $match:{
+                    owner : userId
+                }
+            }
+        )
+     }
+     pipelineArr.push(
+         {
+             $lookup:{
+                 from:"users",
+                 localField:"owner",
+                 foreignField:"_id",
+                 as:"channel"
+             }
+         }
+     )
+     pipelineArr.push(
+         {
+             $unwind:"$channel"
+         }
+     )
+     pipelineArr.push(
+         {
+             $project:{
+                 _id : 1,
+                 owner:1,
+                 videoFile:1,
+                 thumbnail:1,
+                 title:1,
+                 duration:1,
+                 views:1,
+                 channel:"$channel.username",
+                 channelFullName:"$channel.fullName",
+                 channelAvatar:"$channel.avatar",
+             }
+         }
+     )
+ 
+     const result = await Video.aggregate(pipelineArr)
+     .skip(pageOptions.limit*pageOptions.page)
+     .limit(pageOptions.limit)
+     
+ 
+      res
+      .status(200)
+      .json(
+         new ApiResponse(
+             200,
+             result,
+             "videos fetched successFully"
+         )
+      )
+   } catch (error) {
+    res
+    .status(error?.statusCode||500)
+    .json({
+       status:error?.statusCode||500,
+       message:error?.message||"some error in querying videos"
+    })
+   }
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -72,10 +193,10 @@ const publishAVideo = asyncHandler(async (req, res) => {
      )
    } catch (error) {
      res
-     .status(error.statusCode||500)
+     .status(error?.statusCode||500)
      .json({
-        status:error.statusCode||500,
-        message:error.message||"some error in publishing video"
+        status:error?.statusCode||500,
+        message:error?.message||"some error in publishing video"
      })
    }
 
@@ -95,23 +216,78 @@ const getVideoById = asyncHandler(async (req, res) => {
      },{
          new:true
      })
-     if(!video && !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
+    
+     // can update this so that owner can only see through id
+     if(!video || !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
+
      res.status(200)
      .json(new ApiResponse(200,video,"got video from id"))
    } catch (error) {
     res
-    .status(error.statusCode||500)
+    .status(error?.statusCode||500)
     .json({
-       status:error.statusCode||500,
-       message:error.message||"some error in getting video by id"
+       status:error?.statusCode||500,
+       message:error?.message||"some error in getting video by id"
     })
    }
 })
 
 const updateVideo = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
-    //TODO: update video details like title, description, thumbnail
-    if(!videoId) throw new ApiError(400,"videoId missing");
+   try {
+     const { videoId } = req.params
+     // update video details like title, description, thumbnail
+     if(!videoId) throw new ApiError(400,"videoId missing");
+     
+     const {title,description} = req.body ;
+     const thumbnailLocalPath = req.file?.path;
+     if(!title && !description && !thumbnailLocalPath)
+     throw new ApiError(400,"either send updated title ,description or thumbnail");
+     
+     const userId = req.user._id;
+     if(!userId) throw new ApiError(400,"user not logged in");
+ 
+     const video = await Video.findById(videoId);
+ 
+     if(!video) throw new ApiError(400,"video with this videoId is missing")
+     const ownerId = video?.owner;
+     const permission = JSON.stringify(ownerId) == JSON.stringify(userId);
+     console.log(JSON.stringify(ownerId),JSON.stringify(userId))
+ 
+     if(!permission) throw new ApiError(400,"login with owner id");
+     
+     if(thumbnailLocalPath){ 
+         var thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+     }
+     
+     const updatedObj = {};
+     if(title) updatedObj.title = title;
+     if(description) updatedObj.description = description;
+     if(thumbnailLocalPath) updatedObj.thumbnail = thumbnail.secure_url ;
+     
+ 
+     const updatedVideo = await Video.findByIdAndUpdate(
+         new mongoose.Types.ObjectId(videoId),
+         updatedObj,
+         {
+             new:true
+         }
+     )
+ 
+     res.status(200)
+     .json( 
+         new ApiResponse(200,updatedVideo,"video updated successFully")
+     ) ;
+ 
+   } catch (error) {
+     
+    res
+    .status(error?.statusCode||500)
+    .json({
+       status:error?.statusCode||500,
+       message:error?.message||"some error in updating the video"
+    })
+
+   }
 
 })
 
@@ -143,16 +319,62 @@ const deleteVideo = asyncHandler(async (req, res) => {
      )
    } catch (error) {
     res
-    .status(error.statusCode||500)
+    .status(error?.statusCode||500)
     .json({
-       status:error.statusCode||500,
-       message:error.message||"some error in deleting a video"
+       status:error?.statusCode||500,
+       message:error?.message||"some error in deleting a video"
     })
    }
 })
 
 const togglePublishStatus = asyncHandler(async (req, res) => {
-    const { videoId } = req.params
+   try {
+     const { videoId } = req.params
+     // check if video is present and user  is logged in 
+     // check if the owner is the one who is toggling the status
+     // then if all conditions are satisfied then toggle it
+     if(!videoId) throw new ApiError(400,"videoId is absent");
+ 
+     const video = await Video.findById(videoId);
+     if(!video) throw new ApiError(400,"video with this videoId is missing");
+     const ownerId = video?.owner;
+ 
+     const userId = req.user?.id;
+     if(!userId)throw new ApiError(400,"user is not logged in");
+ 
+     const permission = JSON.stringify(userId) == JSON.stringify(ownerId);
+ 
+     if(!permission) throw new ApiError(400,"for toggling video status login with owner id");
+ 
+     const updatedUser = await Video.findByIdAndUpdate(
+         new mongoose.Types.ObjectId(videoId),
+         {
+             isPublic: video.isPublic? false :true  
+         },
+         {
+             new : true 
+         }
+     )
+     
+     res
+     .status(200)
+     .json(
+         new ApiResponse(
+             200,
+             updatedUser,
+             `${video._id} toggle to ${video.isPublic?false:true}`
+         )
+     )
+     
+   } catch (error) {
+    res
+    .status(error?.statusCode||500)
+    .json({
+       status:error?.statusCode||500,
+       message:error?.message||"some error in deleting a video"
+    })
+   }
+
 })
 
 export {
