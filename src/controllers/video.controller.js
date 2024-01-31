@@ -220,6 +220,14 @@ const getVideoById = asyncHandler(async (req, res) => {
      // can update this so that owner can only see through id
      if(!video || !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
 
+     const userId = req.user?._id;
+     const user = await User.findById(userId);
+     
+     user.watchHistory.push(videoId);
+     await user.save({
+        validateBeforeSave:false
+     })
+
      res.status(200)
      .json(new ApiResponse(200,video,"got video from id"))
    } catch (error) {
