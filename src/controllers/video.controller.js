@@ -106,6 +106,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                  channel:"$channel.username",
                  channelFullName:"$channel.fullName",
                  channelAvatar:"$channel.avatar",
+                 createdAt:1
              }
          }
      )
@@ -184,6 +185,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
          description,
          duration:videoFile.duration ,
          isPublic:req.body.isPublic == "false" ? false : true
+        
      })
      
      return res
