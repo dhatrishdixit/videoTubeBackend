@@ -7,11 +7,32 @@ import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
 
-const options = {
+
+console.log(process.env.NODE_ENV);
+const accessTokenCookieOptions = {
     httpOnly:true,
-    secure:true,
-    //  SameSite:None
+    secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
+    SameSite:process.env.NODE_ENV === "PRODUCTION" ? "None":"Lax",
+    expires: new Date(
+        Date.now() + process.env.ACCESS_TOKEN_COOKIE_EXPIRY * 24 * 60 * 60 * 1000
+      ),
+       //Cookie Expire is in days so we convert it in milliseconds to add it to date
 }
+
+const refreshTokenCookieOptions = {
+    httpOnly:true,
+    secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
+    SameSite:process.env.NODE_ENV === "PRODUCTION" ? "None":"Lax",
+    expires: new Date(
+        Date.now() + process.env.REFRESH_TOKEN_COOKIE_EXPIRY * 24 * 60 * 60 * 1000
+      ),
+
+}
+
+// const options = {
+//     httpOnly: true ,
+//     secure: true ,
+// }
 
 
 async function generateRefreshAndAccessToken(userId){
@@ -172,8 +193,8 @@ const loginUser = asyncHandler(async(req,res)=>{
        
       return res
       .status(200)
-      .cookie('accessToken',accessToken,options)
-      .cookie('refreshToken',refreshToken,options)
+      .cookie('accessToken',accessToken,accessTokenCookieOptions)
+      .cookie('refreshToken',refreshToken,refreshTokenCookieOptions)
       .json(
           new ApiResponse(
               200,
@@ -263,8 +284,8 @@ const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
    
        return res
        .status(201)
-       .cookie('accessToken',accessToken,options)
-       .cookie('refreshToken',newRefreshToken,options)
+       .cookie('accessToken',accessToken,accessTokenCookieOptions)
+       .cookie('refreshToken',newRefreshToken,refreshTokenCookieOptions)
        .json(
            new ApiResponse(201,
                {
@@ -557,7 +578,8 @@ const getWatchHistory = asyncHandler(async(req,res)=>{
                                         $project:{
                                             fullName:1,
                                             username:1,
-                                            avatar:1
+                                            avatar:1,
+                                            _id:1
                                         }
                                     }
                                 ]

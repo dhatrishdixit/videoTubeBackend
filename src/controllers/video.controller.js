@@ -204,7 +204,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 })
 
-const getVideoById = asyncHandler(async (req, res) => {
+const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
    try {
      const { videoId } = req.params
      // get video by id
@@ -241,6 +241,33 @@ const getVideoById = asyncHandler(async (req, res) => {
     })
    }
 })
+const getVideoById = asyncHandler(async (req, res) => {
+    try {
+        // this is for getting video info and displaying it in card if its not there 
+      const { videoId } = req.params
+      // get video by id
+  
+      if(!videoId) throw new ApiError(400,"videoId missing");
+      
+      const video = await Video.findOne({
+          _id: new mongoose.Types.ObjectId(videoId)
+      })
+     
+      // can update this so that owner can only see through id
+      if(!video || !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
+ 
+      res.status(200)
+      .json(new ApiResponse(200,video,"got video from id"))
+    } catch (error) {
+     res
+     .status(error?.statusCode||500)
+     .json({
+        status:error?.statusCode||500,
+        message:error?.message||"some error in getting video by id"
+     })
+    }
+ })
+ 
 
 const updateVideo = asyncHandler(async (req, res) => {
    try {
@@ -393,5 +420,6 @@ export {
     getVideoById,
     updateVideo,
     deleteVideo,
-    togglePublishStatus
+    togglePublishStatus,
+    getVideoByIdAndWatch
 }
