@@ -9,7 +9,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
    try {
      // get all comments for a video
      const {videoId} = req.params
-     console.log(videoId)
+    // console.log(videoId)
      const {page, limit} = req.query;
      
      const pageOptions = {

@@ -64,7 +64,7 @@ try {
     
           return await bcrypt.compare(password,this.password)
 } catch (error) {
-    console.log("error :",error)
+  //  console.log("error :",error)
 }
 }
 userSchema.methods.generateAccessToken = function(){

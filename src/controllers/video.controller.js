@@ -288,7 +288,7 @@ const updateVideo = asyncHandler(async (req, res) => {
      if(!video) throw new ApiError(400,"video with this videoId is missing")
      const ownerId = video?.owner;
      const permission = JSON.stringify(ownerId) == JSON.stringify(userId);
-     console.log(JSON.stringify(ownerId),JSON.stringify(userId))
+   //  console.log(JSON.stringify(ownerId),JSON.stringify(userId))
  
      if(!permission) throw new ApiError(400,"login with owner id");
      
@@ -347,7 +347,7 @@ const deleteVideo = asyncHandler(async (req, res) => {
      if(JSON.stringify(ownerId) !== JSON.stringify(userId)) throw new ApiError(400,"login with owner id")
  
      const deleted = await Video.findByIdAndDelete(new mongoose.Types.ObjectId(videoId));
-     console.log(deleted)
+    // console.log(deleted)
  
      return res
      .status(200)

@@ -42,7 +42,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
     const {channelId} = req.params;
     
     if(!channelId) throw new ApiError(400,"channelId missing");
-   console.log(isValidObjectId(channelId)?channelId : new mongoose.Types.ObjectId(channelId))
+ //  console.log(isValidObjectId(channelId)?channelId : new mongoose.Types.ObjectId(channelId))
    try {
 
      const subcriberList = await Subscription.aggregate([
@@ -79,7 +79,7 @@ const getUserChannelSubscribers = asyncHandler(async (req, res) => {
      .status(200)
      .json(new ApiResponse(200,subcriberList,"subscribers found"))
    } catch (error) {
-    console.log(error);
+   // console.log(error);
      throw new ApiError(400,"error while fetching subscriber list")
    }
 })

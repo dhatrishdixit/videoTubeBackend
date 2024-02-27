@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
 
 
-console.log(process.env.NODE_ENV);
+//console.log(process.env.NODE_ENV);
 const accessTokenCookieOptions = {
     httpOnly:true,
     secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
@@ -49,7 +49,7 @@ async function generateRefreshAndAccessToken(userId){
         return {accessToken,refreshToken};
     }
     catch(err){
-        console.log('ERROR : ',err)
+     //   console.log('ERROR : ',err)
         throw new ApiError(500,'not able to generate tokens ')
     }
 
@@ -266,7 +266,7 @@ const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
           try {
              decodedToken = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET);
           } catch (error) {
-             console.log('error at decoding ',error.message)
+       //      console.log('error at decoding ',error.message)
           }
    
    //console.log(decodedToken)

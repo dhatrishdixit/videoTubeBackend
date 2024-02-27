@@ -112,10 +112,10 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         
         if(!permission) throw new ApiError('login with owner id to add video to playlist');
         const video = await Video.findById(videoId)
-        console.log(video)
+      //  console.log(video)
         playlist.videos.push(video._id);
         const updatedVideosArr = playlist.videos;
-        console.log(updatedVideosArr)
+      //  console.log(updatedVideosArr)
         // can also just save it that is save playlist 
         // await playlist.save() check this 
         // can also give out a better array with video info 
