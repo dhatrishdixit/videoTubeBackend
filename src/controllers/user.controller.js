@@ -534,7 +534,7 @@ try {
             }
         ]);
     
-        console.log(channel)
+
     
         if(!channel) throw new ApiError(400,"failed to get channel Info")
     
