@@ -62,7 +62,7 @@ userSchema.methods.isPasswordCorrect = async function(password){
     
 try {
     
-          return await bcrypt.compare(password,this.password)
+    return await bcrypt.compare(password,this.password)
 } catch (error) {
    console.log("error :",error)
 }

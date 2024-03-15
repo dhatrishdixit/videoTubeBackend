@@ -344,6 +344,7 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 })
 
 const getCurrentUser = asyncHandler(async(req,res)=>{
+    if(!req.user) throw new ApiError(401,"user authentication cookie not found");
     try {
         res
         .status(201)
