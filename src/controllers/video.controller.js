@@ -114,7 +114,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
      const result = await Video.aggregate(pipelineArr)
      .skip(pageOptions.limit*pageOptions.page)
      .limit(pageOptions.limit)
-     
+    //  console.log(result.length)
  
       res
       .status(200)
