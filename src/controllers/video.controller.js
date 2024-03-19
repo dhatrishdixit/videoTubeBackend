@@ -114,7 +114,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
      const result = await Video.aggregate(pipelineArr)
      .skip(pageOptions.limit*pageOptions.page)
      .limit(pageOptions.limit)
-    //  console.log(result.length)
+    // console.log(result.length)
  
       res
       .status(200)
@@ -208,18 +208,79 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
    try {
      const { videoId } = req.params
      // get video by id
+     
+//      [
+//   {
+//     $lookup: {
+//       from: "users",
+//       localField: "owner",
+//       foreignField: "_id",
+//       as: "owner"
+//     }
+//   },{
+//     $unwind:"$owner" 
+//   },{
+//    $project: {
+//      views:1,
+//      description:1,
+//      _id:1,
+//      videoFile:1,
+//      thumbnail:1,
+//      channelId:"$owner._id",
+//      channelEmail:"$owner.email",
+//      channelName:"$owner.fullName",
+//      channelAvatar:"$owner.avatar",
+//      title:1,
+//      createdAt:1
+//    }
+//   }
+// ]
  
      if(!videoId) throw new ApiError(400,"videoId missing");
      
-     const video = await Video.findOneAndUpdate({
-         _id: new mongoose.Types.ObjectId(videoId)
-     },{
-         $inc:{views:1}
-     },{
-         new:true
-     })
+    //  const video = await Video.findOneAndUpdate({
+    //      _id: new mongoose.Types.ObjectId(videoId)
+    //  },{
+    //      $inc:{views:1}
+    //  },{
+    //      new:true
+    //  })
     
+    const videos = await Video.aggregate([
+        {
+            $match:{
+                _id:new mongoose.Types.ObjectId(videoId)
+            }
+        },
+        {
+                $lookup: {
+                  from: "users",
+                  localField: "owner",
+                  foreignField: "_id",
+                  as: "owner"
+                }
+              },{
+                $unwind:"$owner" 
+              },{
+               $project: {
+                 views:1,
+                 description:1,
+                 _id:1,
+                 videoFile:1,
+                 thumbnail:1,
+                 channelId:"$owner._id",
+                 channelEmail:"$owner.email",
+                 channelName:"$owner.fullName",
+                 channelAvatar:"$owner.avatar",
+                 title:1,
+                 createdAt:1,
+                 isPublic:1
+               }
+              }
+    ])
+     const video = videos[0];
      // can update this so that owner can only see through id
+     // also get info like channel subscriber count and etc check that 
      if(!video || !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
 
      const userId = req.user?._id;
