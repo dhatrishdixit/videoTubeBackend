@@ -1,4 +1,4 @@
-import mongoose, {isValidObjectId} from "mongoose"
+import mongoose from "mongoose"
 import {Video} from "../models/video.model.js"
 import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
@@ -206,45 +206,20 @@ const publishAVideo = asyncHandler(async (req, res) => {
 
 const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
    try {
-     const { videoId } = req.params
-     // get video by id
-     
-//      [
-//   {
-//     $lookup: {
-//       from: "users",
-//       localField: "owner",
-//       foreignField: "_id",
-//       as: "owner"
-//     }
-//   },{
-//     $unwind:"$owner" 
-//   },{
-//    $project: {
-//      views:1,
-//      description:1,
-//      _id:1,
-//      videoFile:1,
-//      thumbnail:1,
-//      channelId:"$owner._id",
-//      channelEmail:"$owner.email",
-//      channelName:"$owner.fullName",
-//      channelAvatar:"$owner.avatar",
-//      title:1,
-//      createdAt:1
-//    }
-//   }
-// ]
- 
+     const { videoId } = req.params; 
      if(!videoId) throw new ApiError(400,"videoId missing");
-     
-    //  const video = await Video.findOneAndUpdate({
-    //      _id: new mongoose.Types.ObjectId(videoId)
-    //  },{
-    //      $inc:{views:1}
-    //  },{
-    //      new:true
-    //  })
+     const userId = req.user?._id;
+
+
+     await Video.findOneAndUpdate({
+         _id: new mongoose.Types.ObjectId(videoId)
+     },{
+         $inc:{views:1}
+     },{
+         new:true
+     })
+    // remember aggregation pipeline doesn't change anything in data base it is just used to get data not update it in data base
+    // $in
     
     const videos = await Video.aggregate([
         {
@@ -259,9 +234,11 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                   foreignField: "_id",
                   as: "owner"
                 }
-              },{
+        },
+        {
                 $unwind:"$owner" 
-              },{
+        },
+        {
                $project: {
                  views:1,
                  description:1,
@@ -276,14 +253,45 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                  createdAt:1,
                  isPublic:1
                }
-              }
+        },
+        {
+                $lookup:{
+                from:"subscriptions",
+                localField:"channelId",
+                foreignField:"channel" ,
+                as: "subscribers"
+                }
+        },
+        {
+                 $lookup:{
+                    from:"likes",
+                    localField:"_id",
+                    foreignField:"video" ,
+                    as: "likes"
+                 } 
+        },
+        {
+                 $addFields:{
+                   subscribersCount:{
+                    $size:"$subscribers"
+                },
+                   likesCount:{
+                     $size:"$likes"
+                },
+                   isSubscribed:{ 
+                     $in: [new mongoose.Types.ObjectId(userId), "$subscribers.subscriber"]
+                },  
+                   isLiked:{
+                     $in: [new mongoose.Types.ObjectId(userId),
+                    "$likes.likedBy"] 
+                }
+                } 
+        }
     ])
-     const video = videos[0];
-     // can update this so that owner can only see through id
+      const video = videos[0];
+
      // also get info like channel subscriber count and etc check that 
      if(!video || !video?.isPublic) throw new ApiError(400,`video with this ${videoId} is not available`)
-
-     const userId = req.user?._id;
      const user = await User.findById(userId);
      
      user.watchHistory.push(videoId);
