@@ -251,7 +251,8 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                  channelAvatar:"$owner.avatar",
                  title:1,
                  createdAt:1,
-                 isPublic:1
+                 isPublic:1,
+                 
                }
         },
         {
@@ -271,12 +272,23 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                  } 
         },
         {
+                 $lookup:{
+                     from:"comments",
+                     localField:"_id",
+                     foreignField:"video",
+                     as: "comments"
+                 }
+        },
+        {
                  $addFields:{
                    subscribersCount:{
                     $size:"$subscribers"
                 },
                    likesCount:{
                      $size:"$likes"
+                },
+                   commentsCount:{
+                     $size:"$comments"
                 },
                    isSubscribed:{ 
                      $in: [new mongoose.Types.ObjectId(userId), "$subscribers.subscriber"]
