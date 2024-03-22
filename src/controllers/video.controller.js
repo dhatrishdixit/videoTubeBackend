@@ -495,6 +495,62 @@ const togglePublishStatus = asyncHandler(async (req, res) => {
 
 })
 
+const channelsVideo = asyncHandler(async (req,res) => {
+     try {
+        const {channelId} = req.params ;
+        if(!channelId) throw new ApiError(400,"channelId is absent");
+        const videos = await Video.aggregate([
+              {
+                $match:{
+                    isPublic:true,
+                    owner:new mongoose.Types.ObjectId(channelId)
+                }
+              },{
+                $lookup:{
+                    from:"users",
+                    localField:"owner",
+                    foreignField:"_id",
+                    as:"channel"
+                }
+              },{
+                $unwind:"$channel"
+              },{
+                $project:{
+                    _id:1,
+                    videoFile:1,
+                    thumbnail:1,
+                    owner:1,
+                    title:1,
+                    duration:1,
+                    views:1,
+                    createdAt:1,
+                    description:1,
+                    channel:"$channel.username",
+                    channelAvatar:"$channel.avatar",
+                    channelFullName:"$channel.fullName",                   
+                }
+              }
+        ])
+        
+        res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                videos,
+                `got videos from channel : ${channelId}`
+            )
+        )
+     } catch (error) {
+        res
+        .status(error?.statusCode||500)
+        .json({
+           status:error?.statusCode||500,
+           message:error?.message||"some error in fetching channel videos"
+        })
+     }
+})
+
 export {
     getAllVideos,
     publishAVideo,
@@ -502,5 +558,6 @@ export {
     updateVideo,
     deleteVideo,
     togglePublishStatus,
-    getVideoByIdAndWatch
+    getVideoByIdAndWatch,
+    channelsVideo
 }
