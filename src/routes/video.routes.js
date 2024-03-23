@@ -7,7 +7,7 @@ import {
     togglePublishStatus,
     updateVideo,
     getVideoByIdAndWatch,
-    channelsVideo
+    channelsVideo,
 } from "../controllers/video.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/multer.middlewares.js";

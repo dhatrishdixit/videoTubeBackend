@@ -73,11 +73,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
         pipelineArr.push(
             {
                 $match:{
-                    owner : userId
+                    owner : new mongoose.Types.ObjectId(userId)
                 }
             }
         )
      }
+    //  if(channelId){
+    //     pipelineArr.push(
+    //         {
+    //             $match:{
+
+    //             }
+    //         }
+    //     )
+    //  }
      pipelineArr.push(
          {
              $lookup:{
@@ -103,6 +112,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
                  title:1,
                  duration:1,
                  views:1,
+                 channelId:"$channel._id",
                  channel:"$channel.username",
                  channelFullName:"$channel.fullName",
                  channelAvatar:"$channel.avatar",
