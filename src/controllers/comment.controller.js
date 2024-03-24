@@ -17,18 +17,63 @@ const getVideoComments = asyncHandler(async (req, res) => {
          limit: parseInt(limit, 10) || 15
      }
      if(!videoId) throw new ApiError(400,"video id is absent");
-    
+     const userId = req?.user?._id;
      // console.log()
     // no point of checking for video further database calls 
      const comments = await Comment.aggregate([
-        {
-         $match:{
-             video:new mongoose.Types.ObjectId(videoId)
-         }
+          {
+             $match:{
+               video:new mongoose.Types.ObjectId(videoId)
+             }
+        },{
+            $lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as:"owner"
+            }
+        },{
+            $unwind:"$owner"
+        },{
+            $project:{
+                _id:1,
+                content:1,
+                video:1,
+                owner:1,
+                createdAt:1 ,
+                ownerUsername:"$owner.username",
+                ownerAvatar:"$owner.avatar",
+                owner:"$owner._id"
+             }
+        },{
+            $lookup:{
+                from:"likes",
+                localField:"_id",
+                foreignField:"comment",
+                as:"likes"
+            }
+        },{
+            $addFields:{
+                isUpdatable:{
+                    $eq:[new mongoose.Types.ObjectId(userId),"$owner"]
+                },
+                isLiked:{
+                    $in:[new mongoose.Types.ObjectId(userId),"$likes.likedBy"]
+                },
+                likes:{
+                    $size:"$likes"
+                }
+            }
         }
-     ]).skip(pageOptions.page * pageOptions.limit).limit(pageOptions.limit);
+     ])
+     .skip(pageOptions.page * pageOptions.limit).limit(pageOptions.limit);
+
+     // things to add user info from lookup 
+     // likes count from lookup 
      //console.log(comments)
-     if(comments.length == 0) throw new ApiError(400,"no comments found");
+     if(comments.length == 0) {
+        comments = "no comments found"
+     }
      
      res.status(200)
      .json(

@@ -105,6 +105,9 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     )
 })
 
+//TODO:get channel comments 
+
+
 export {
     getChannelStats, 
     getChannelVideos
