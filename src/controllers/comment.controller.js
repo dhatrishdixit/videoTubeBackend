@@ -54,7 +54,7 @@ const getVideoComments = asyncHandler(async (req, res) => {
             }
         },{
             $addFields:{
-                isUpdatable:{
+                isEditable:{
                     $eq:[new mongoose.Types.ObjectId(userId),"$owner"]
                 },
                 isLiked:{
