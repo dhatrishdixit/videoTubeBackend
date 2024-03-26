@@ -10,8 +10,13 @@ const getVideoComments = asyncHandler(async (req, res) => {
      // get all comments for a video
      const {videoId} = req.params
     // console.log(videoId)
-     const {page, limit} = req.query;
-     
+     const {page, limit , ascending = "false"  } = req.query;
+    //  console.log(ascending)
+    
+     // if sortType == 1 then show the newest comment 
+     // else show the most liked comment 
+     // ascending == true 
+
      const pageOptions = {
          page: parseInt(page, 10) || 0,
          limit: parseInt(limit, 10) || 15
@@ -64,6 +69,11 @@ const getVideoComments = asyncHandler(async (req, res) => {
                     $size:"$likes"
                 }
             }
+        },{
+            $sort:
+            ascending === "true"
+              ? { createdAt: -1 }
+              : { likes: -1 },
         }
      ])
      .skip(pageOptions.page * pageOptions.limit).limit(pageOptions.limit);

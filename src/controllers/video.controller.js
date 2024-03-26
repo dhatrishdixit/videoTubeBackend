@@ -78,15 +78,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
             }
         )
      }
-    //  if(channelId){
-    //     pipelineArr.push(
-    //         {
-    //             $match:{
-
-    //             }
-    //         }
-    //     )
-    //  }
+  
      pipelineArr.push(
          {
              $lookup:{
