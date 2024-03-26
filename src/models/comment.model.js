@@ -21,7 +21,7 @@ const commentSchema = new Schema(
     }
 )
 
-
+// TODO: think of comment to a comment or will you build seperate for that but that will be complex 
 commentSchema.plugin(mongooseAggregatePaginate)
 
 export const Comment = mongoose.model("Comment", commentSchema)
