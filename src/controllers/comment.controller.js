@@ -71,11 +71,15 @@ const getVideoComments = asyncHandler(async (req, res) => {
      // things to add user info from lookup 
      // likes count from lookup 
      //console.log(comments)
-     if(comments.length == 0) {
-        comments = "no comments found"
-     }
+     if(comments.length == 0) return res.status(200).json(
+        new ApiResponse(
+            200,
+            [],
+            "no comments found"
+        )
+     )
      
-     res.status(200)
+      return res.status(200)
      .json(
         new ApiResponse(
          200,
