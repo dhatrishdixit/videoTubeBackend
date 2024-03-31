@@ -482,7 +482,8 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
 
 const getUserChannelProfile = asyncHandler(async(req,res) => {
 
-try {
+try {   
+        
         const {username} = req.params;
         if(!username?.trim()) throw new ApiError(400,"username not passed");
         
@@ -504,6 +505,13 @@ try {
                     localField:"_id",
                     foreignField:"subscriber",
                     as:"channelsSubscribedTo"
+                }
+            },{
+                $lookup:{
+                    from:"videos",
+                    localField:"_id",
+                    foreignField:"owner",
+                    as:"videos"
                 }
             },{
                 $addFields:{
@@ -532,7 +540,8 @@ try {
                    email:1,
                    subscriberCount:1,
                    subscribedToCount:1,
-                   isSubscribed:1
+                   isSubscribed:1,
+                   videos:1
                 }
             }
         ]);
