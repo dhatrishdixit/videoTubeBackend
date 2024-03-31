@@ -259,7 +259,7 @@ const logoutUser = asyncHandler(async (req,res)=>{
 const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
  try {
        const incomingRefreshToken = req.cookies?.refreshToken || req.header?.refreshToken;
-     //  console.log(incomingRefreshToken);
+       console.log(incomingRefreshToken);
        if(!incomingRefreshToken) throw new ApiError(401,"refreshToken is absent")
    
          let decodedToken ;
@@ -275,7 +275,9 @@ const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
        if(!user){
            throw new ApiError(401,'invalid refresh token');
        }
-   
+    //    console.log("refresh token from cookie : ",incomingRefreshToken);
+    //    console.log("refresh token from database",user.refreshToken)
+    //    console.log(incomingRefreshToken == user.refreshToken)
        if(incomingRefreshToken !== user?.refreshToken){
            throw new ApiError(401,"refreshToken is expired");
        }

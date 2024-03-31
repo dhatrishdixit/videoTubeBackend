@@ -247,6 +247,7 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                  _id:1,
                  videoFile:1,
                  thumbnail:1,
+                 channel:"$owner.username",
                  channelId:"$owner._id",
                  channelEmail:"$owner.email",
                  channelName:"$owner.fullName",
