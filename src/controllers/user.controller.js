@@ -514,6 +514,20 @@ try {
                     as:"videos"
                 }
             },{
+                $lookup:{
+                    from:"tweets",
+                    localField:"_id",
+                    foreignField:"owner",
+                    as:"tweet"
+                }
+            },{
+                $lookup:{
+                    from:"playlist",
+                    localField:"_id",
+                    foreignField:"owner",
+                    as:"playlist"
+                }
+            },{
                 $addFields:{
                     subscriberCount:{
                         $size:"$subscribers"
@@ -529,7 +543,10 @@ try {
                             then:true,
                             else:false
                         }
-                    }
+                    },
+                    videos: { $size: { $ifNull: ["$videos", []] } },
+                    tweets: { $size: { $ifNull: ["$tweets", []] } },
+                    playlists: { $size: { $ifNull: ["$playlist", []] } }
                 }
             },{
                 $project:{
@@ -541,8 +558,12 @@ try {
                    subscriberCount:1,
                    subscribedToCount:1,
                    isSubscribed:1,
-                   videos:1
+                   videos:1,
+                   tweets:1,
+                   playlists:1
+               
                 }
+                
             }
         ]);
     

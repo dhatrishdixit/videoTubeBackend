@@ -21,6 +21,5 @@ const playlistSchema = new Schema({
     },
 }, {timestamps: true})
 
-//TODO: also add a toggle for isPublic
 
 export const Playlist = mongoose.model("Playlist", playlistSchema)
