@@ -32,9 +32,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
              $match:{
                  isPublic:true
              }
-         },  
+         },{
+            $lookup:{
+                from: "likes",
+                localField: "_id",
+                foreignField: "video",
+                as: "likes"
+            }
+         },{
+            $addFields:{
+                likes: { $size: { $ifNull: ["$likes", []] } }
+            }
+         }  
      ]
-
+       
      if(query){
         pipelineArr.push(
             {  
@@ -50,6 +61,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
  
      if(sortBy){
          if(sortType == "ascending") {
+            // oldest in case of createdAt
              pipelineArr.push(
                  {
                      $sort: {
@@ -59,6 +71,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
              )
          }
          if(sortType == "descending") {
+            // newest in case of createdAt 
              pipelineArr.push(
                  {
                      $sort: {
@@ -108,7 +121,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
                  channel:"$channel.username",
                  channelFullName:"$channel.fullName",
                  channelAvatar:"$channel.avatar",
-                 createdAt:1
+                 createdAt:1,
+                 likes:1
              }
          }
      )
