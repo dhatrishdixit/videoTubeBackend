@@ -20,7 +20,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
     // sort by UserId i.e get all the videos of user
     
    try {
-     const { page, limit, query, sortBy, sortType, userId } = req.query
+     const { page, limit, query, sortBy, sortType, userId, username } = req.query
      
      const pageOptions = {
          page : Number(page) || 0,
@@ -45,6 +45,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
             }
          }  
      ]
+
+       
+     pipelineArr.push(
+        {
+            $lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as:"channel"
+            }
+        }
+    )
+
+
        
      if(query){
         pipelineArr.push(
@@ -91,17 +105,9 @@ const getAllVideos = asyncHandler(async (req, res) => {
             }
         )
      }
-  
-     pipelineArr.push(
-         {
-             $lookup:{
-                 from:"users",
-                 localField:"owner",
-                 foreignField:"_id",
-                 as:"channel"
-             }
-         }
-     )
+
+   
+
      pipelineArr.push(
          {
              $unwind:"$channel"
@@ -122,10 +128,20 @@ const getAllVideos = asyncHandler(async (req, res) => {
                  channelFullName:"$channel.fullName",
                  channelAvatar:"$channel.avatar",
                  createdAt:1,
-                 likes:1
+                 likes:1,
+                 description:1
              }
          }
      )
+     if(username){
+        pipelineArr.push(
+            {
+                 $match:{
+                    channel:username
+                 }
+            }
+        )
+     }
  
      const result = await Video.aggregate(pipelineArr)
      .skip(pageOptions.limit*pageOptions.page)
