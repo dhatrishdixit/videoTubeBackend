@@ -5,6 +5,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import { Video } from "../models/video.model.js"
 
+//TODO: very important to think about owner id here as there was some bug in video controller
 
 const createPlaylist = asyncHandler(async (req, res) => {
   try {

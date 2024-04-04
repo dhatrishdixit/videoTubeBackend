@@ -59,7 +59,46 @@ const getAllVideos = asyncHandler(async (req, res) => {
     )
 
 
-       
+  
+
+   
+
+     pipelineArr.push(
+         {
+             $unwind:"$channel"
+         }
+     )
+     pipelineArr.push(
+         {
+             $project:{
+                 _id : 1,
+                 owner:1,
+                 videoFile:1,
+                 thumbnail:1,
+                 title:1,
+                 duration:1,
+                 views:1,
+                 channelId:"$channel._id",
+                 channel:"$channel.username",
+                 channelFullName:"$channel.fullName",
+                 channelAvatar:"$channel.avatar",
+                 createdAt:1,
+                 likes:1,
+                 description:1
+             }
+         }
+     )
+     if(username){
+        pipelineArr.push(
+            {
+                 $match:{
+                    channel:username
+                 }
+            }
+        )
+     }
+
+          
      if(query){
         pipelineArr.push(
             {  
@@ -102,43 +141,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
                 $match:{
                     owner : new mongoose.Types.ObjectId(userId)
                 }
-            }
-        )
-     }
-
-   
-
-     pipelineArr.push(
-         {
-             $unwind:"$channel"
-         }
-     )
-     pipelineArr.push(
-         {
-             $project:{
-                 _id : 1,
-                 owner:1,
-                 videoFile:1,
-                 thumbnail:1,
-                 title:1,
-                 duration:1,
-                 views:1,
-                 channelId:"$channel._id",
-                 channel:"$channel.username",
-                 channelFullName:"$channel.fullName",
-                 channelAvatar:"$channel.avatar",
-                 createdAt:1,
-                 likes:1,
-                 description:1
-             }
-         }
-     )
-     if(username){
-        pipelineArr.push(
-            {
-                 $match:{
-                    channel:username
-                 }
             }
         )
      }

@@ -34,6 +34,76 @@ const createTweet = asyncHandler(async (req, res) => {
     }
 })
 
+
+const getUserTweetsByUsername = asyncHandler(async (req, res) => {
+    // this is the userTweets under use
+    // get user tweets
+   try {
+     const ownerUsername = req.params.username;
+     const userId = req.user._id;
+    // console.log(ownerUsername)
+     if(!userId) throw new ApiError(400,"user not logged in")
+     if(!ownerUsername) throw new ApiError(400,"owner username is not there")
+
+     const tweets = await Tweet.aggregate([
+         {
+             $lookup:{
+                from:"users",
+                localField:"owner",
+                foreignField:"_id",
+                as:"owner"  
+             }
+         },{
+            $unwind:"$owner"
+         },{
+            $match:{
+                "owner.username":ownerUsername
+            }
+         },{
+             $project:{
+                 ownerUsername:"$owner.username",
+                 ownerAvatar:"$owner.avatar",
+                 ownerFullname:"$owner.fullName",
+                 ownerId:"$owner._id",
+                 createdAt:1,
+                 content:1
+             }
+         },{
+            $lookup:{
+                from:"likes",
+                localField:"_id",
+                foreignField:"tweet",
+                as:"likes"
+            }
+         },{
+            $addFields:{
+                isLiked:{
+                    $in:[new mongoose.Types.ObjectId(userId),"$likes.likedBy"]
+                },
+                likes:{
+                    $size:"$likes"
+                }
+            }
+         }
+     ]);
+    //  console.log(tweets);
+     
+     if(tweets.length == 0) throw new ApiError(400,"no tweets")
+ 
+     return res
+     .json(
+         new ApiResponse(200,tweets,"tweets fetched successfully")
+     )
+   } catch (error) {
+    res
+    .status(error.statusCode || 500)
+    .json({
+       status:error.statusCode || 500,
+       message:error.message || "some error in finding tweets by a username "
+    })
+   }
+})
+
 const getUserTweets = asyncHandler(async (req, res) => {
     // get user tweets
    try {
@@ -66,6 +136,7 @@ const getUserTweets = asyncHandler(async (req, res) => {
     })
    }
 })
+
 
 const updateTweet = asyncHandler(async (req, res) => {
     // update tweet
@@ -129,5 +200,6 @@ export {
     createTweet,
     getUserTweets,
     updateTweet,
-    deleteTweet
+    deleteTweet,
+    getUserTweetsByUsername
 }
