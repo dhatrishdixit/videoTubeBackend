@@ -107,12 +107,12 @@ const getUserTweetsByUsername = asyncHandler(async (req, res) => {
 const getUserTweets = asyncHandler(async (req, res) => {
     // get user tweets
    try {
-     const ownerId = req.user._id;
-     if(!ownerId) throw new ApiError(400,"owner is not logged in")
+     const userId = req.user._id;
+     if(!userId) throw new ApiError(400,"owner is not logged in")
      const tweets = await Tweet.aggregate([
          {
              $match:{
-                 owner:new mongoose.Types.ObjectId(ownerId)
+                 owner:new mongoose.Types.ObjectId(userId)
              }
          },{
              $project:{
