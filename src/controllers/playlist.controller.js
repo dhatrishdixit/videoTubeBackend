@@ -73,6 +73,37 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 
 })
 
+
+const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
+    try {
+          const {ownerUsername} = req.params;
+          const userUsername = req.user.username;
+      
+          if(!ownerUsername) throw new ApiError(400,"userId is absent");
+      
+          const playlists = await Playlist.aggregate([
+              {
+                
+              }
+          ]);
+      
+          res
+          .status(200)
+          .json(
+              new ApiResponse(200,playlists,"playlists fetched")
+          )
+    } catch (error) {
+       res
+       .status(error?.statusCode||500)
+       .json({
+          status:error?.statusCode||500,
+          message:error?.message||"some error in fetching a users playlists",
+          originOfError:"playlist controller"
+       })
+    }
+   
+   })
+
 const getPlaylistById = asyncHandler(async (req, res) => {
    try {
      const {playlistId} = req.params

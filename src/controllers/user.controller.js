@@ -409,14 +409,16 @@ const updateCurrentUser = asyncHandler(async(req,res)=>{
 
 const updateUserAvatar = asyncHandler(async(req,res)=>{
   try {
+      const user = req.user;
+      if(!user) throw new ApiError(400,"user not logged in")
       const avatarLocalPath = req.file?.path;
      
       if(!avatarLocalPath) throw new ApiError(400,"avatar is missing")
   
       const avatar = await uploadOnCloudinary(avatarLocalPath);
       if(!avatar.url) throw new ApiError(500,"file failed to load in cloudinary");
-  
-      
+    //TODO: delete older image 
+    //   await deleteFromCloudinary(user.avatar);
       const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
            $set:{
                  avatar:avatar.url,
@@ -424,7 +426,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
       },{
           new:true
        }).select("-password");
-       await deleteFromCloudinary(avatar.public_id);
+       
        res.status(200)
        .json(
           new ApiResponse(200
@@ -446,12 +448,15 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
 
 const updateCoverImage = asyncHandler(async(req,res)=>{
    try {
+     const user = req.user ;
+     if(!user) throw new ApiError(400,"user not logged in ")
      const coverImageLocalPath = req.file?.path;
      if(!coverImageLocalPath) throw new ApiError(400,"coverImage is missing")
  
      const coverImage = await uploadOnCloudinary(coverImageLocalPath);
      if(!coverImage.url) throw new ApiError(500,"file failed to load in cloudinary");
- 
+    // TODO: delete older cover image 
+    //   if(user.coverImage) await deleteFromCloudinary(user.coverImage);
      
      const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
           $set:{
@@ -460,7 +465,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
      },{
          new:true
       }).select("-password");
-      await deleteFromCloudinary(coverImage.public_id);
+      
       res.status(200)
       .json(
          new ApiResponse(200
@@ -475,7 +480,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
     .json({
        status:error?.statusCode||500,
        message:error?.message||"some error in updating cover image of user ",
-       originOfError:"user controller"
+       originOfError:"user update updateCoverImage controller"
     })
    }
 })
