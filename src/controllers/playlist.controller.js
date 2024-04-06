@@ -104,22 +104,31 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
                     as:"videos"
                 }
               },{
-                 $addFields:{
-                     videosInPlaylist: { $size: { $ifNull: ["$videos", []] } },
-                     playlistCoverImage:{
-                         $arrayElemAt:["$videos",0]
-                     }
-                 }
+                $addFields:{
+                    videoFirstElement:{
+                        $arrayElemAt:[
+                            "$videos",0
+                        ],
+                        
+                    },videos:{
+                            $size: { $ifNull: ["$videos", []] }
+                        }
+                }
               },{
-                
+                $project:{
+                    _id:1,
+                    description:1,
+                    name:1,
+                    ownerId:"$owner._id",
+                    ownerUsername:"$owner.username",
+                    ownerFullname:"$owner.fullName",
+                    FirstVideoThumbnail:"$videoFirstElement.thumbnail"
+                    
+                }
               }
           ]);
 
-          //{
-                // $addFields:{
-                //         videosInPlaylist: { $size: { $ifNull: ["$videos", []] } },
-                // }
-          //  }
+     
       
           res
           .status(200)
