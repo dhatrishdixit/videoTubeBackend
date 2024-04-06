@@ -122,7 +122,8 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
                     ownerId:"$owner._id",
                     ownerUsername:"$owner.username",
                     ownerFullname:"$owner.fullName",
-                    FirstVideoThumbnail:"$videoFirstElement.thumbnail"
+                    FirstVideoThumbnail:"$videoFirstElement.thumbnail",
+                    videos:1,
                     
                 }
               }
