@@ -77,15 +77,49 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
     try {
           const {ownerUsername} = req.params;
-          const userUsername = req.user.username;
-      
-          if(!ownerUsername) throw new ApiError(400,"userId is absent");
+          const user = req.user;
+          
+          if(!user) throw new ApiError(400,"user is not logged in")
+          if(!ownerUsername) throw new ApiError(400,"ownerUsername is absent");
       
           const playlists = await Playlist.aggregate([
               {
+                $lookup:{
+                    from:"users",
+                    localField:"owner",
+                    foreignField:"_id",
+                    as:"owner"
+                }
+              },{
+                $unwind:"$owner"
+              },{
+                 $match:{
+                    "owner.username":ownerUsername
+                 }
+              },{
+                $lookup:{
+                    from:"videos",
+                    localField:"videos",
+                    foreignField:"_id",
+                    as:"videos"
+                }
+              },{
+                 $addFields:{
+                     videosInPlaylist: { $size: { $ifNull: ["$videos", []] } },
+                     playlistCoverImage:{
+                         $arrayElemAt:["$videos",0]
+                     }
+                 }
+              },{
                 
               }
           ]);
+
+          //{
+                // $addFields:{
+                //         videosInPlaylist: { $size: { $ifNull: ["$videos", []] } },
+                // }
+          //  }
       
           res
           .status(200)
@@ -145,7 +179,7 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         if(!permission) throw new ApiError('login with owner id to add video to playlist');
         const video = await Video.findById(videoId)
       //  console.log(video)
-        playlist.videos.push(video._id);
+        playlist.videos.push(video?._id);
         const updatedVideosArr = playlist.videos;
       //  console.log(updatedVideosArr)
         // can also just save it that is save playlist 
@@ -321,5 +355,6 @@ export {
     addVideoToPlaylist,
     removeVideoFromPlaylist,
     deletePlaylist,
-    updatePlaylist
+    updatePlaylist,
+    getUserPlaylistsByUsername
 }
