@@ -154,7 +154,57 @@ const getPlaylistById = asyncHandler(async (req, res) => {
      // get playlist by id 
      if(!playlistId) throw new ApiError(400,"playlist id is not present");
  
-     const playlist = await Playlist.findById(playlistId);
+    //  const playlist = await Playlist.findById(playlistId);
+    const playlist = await Playlist.aggregate([
+        { $match: { _id: new mongoose.Types.ObjectId(playlistId) } },
+        {
+          $lookup: {
+            from: "videos",
+            localField: "videos",
+            foreignField: "_id",
+            as: "videos",
+            pipeline: [
+              {
+                $lookup: {
+                  from: "users",
+                  localField: "owner",
+                  foreignField: "_id",
+                  as: "channel",
+                }
+              },
+              { $unwind: "$channel" },
+              {
+                $project: {
+                  _id: 1,
+                  owner: 1,
+                  videoFile: 1,
+                  thumbnail: 1,
+                  title: 1,
+                  duration: 1,
+                  views: 1,
+                  channelId: "$channel._id",
+                  channel: "$channel.username",
+                  channelFullName: "$channel.fullName",
+                  channelAvatar: "$channel.avatar",
+                  createdAt: 1,
+                  likes: 1,
+                  description: 1
+                }
+              }
+            ]
+          }
+        },{
+            $project:{
+                _id:1,
+                owner:1,
+                created:1,
+                name:1,
+                description:1,
+                videos:1
+            }
+        }
+      ]);
+
      if(!playlist) throw new ApiError(400,"playlist with this id not available");
  
      res.status(200)

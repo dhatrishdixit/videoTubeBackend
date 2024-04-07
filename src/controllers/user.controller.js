@@ -8,7 +8,7 @@ import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
 
 
-//console.log(process.env.NODE_ENV);
+
 const accessTokenCookieOptions = {
     httpOnly:true,
     secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
