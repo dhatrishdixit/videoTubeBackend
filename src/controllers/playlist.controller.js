@@ -151,12 +151,25 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
    try {
      const {playlistId} = req.params
+   
+
      
      if(!playlistId) throw new ApiError(400,"playlist id is not present");
  
 
     const playlist = await Playlist.aggregate([
         { $match: { _id: new mongoose.Types.ObjectId(playlistId) } },
+        {
+          $lookup:{
+            from:"users",
+            localField:"owner",
+            foreignField:"_id",
+            as:"owner"
+          }
+        },
+        {
+           $unwind:"$owner"
+        },
         {
           $lookup: {
             from: "videos",
@@ -196,7 +209,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         },{
             $project:{
                 _id:1,
-                owner:1,
+                owner:"$owner.username",
+                ownerAvatar:"$owner.avatar",
                 createdAt:1,
                 name:1,
                 description:1,
@@ -222,6 +236,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
     })
    }
 })
+
 
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
     try {
