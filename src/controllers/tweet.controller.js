@@ -66,7 +66,8 @@ const getUserTweetsByUsername = asyncHandler(async (req, res) => {
                  ownerFullname:"$owner.fullName",
                  ownerId:"$owner._id",
                  createdAt:1,
-                 content:1
+                 content:1,
+                 _id:1 
              }
          },{
             $lookup:{

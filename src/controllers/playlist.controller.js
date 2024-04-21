@@ -200,7 +200,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                 createdAt:1,
                 name:1,
                 description:1,
-                videos:1
+                videos:1,
+                
             }
         }
       ]);
