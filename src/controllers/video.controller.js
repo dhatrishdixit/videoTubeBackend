@@ -7,6 +7,7 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 import {uploadOnCloudinary} from "../utils/cloudinary.js"
 import fs from "fs";
 
+//TODO: write a controller for getting videos heading only also in frontend have debouncing to limit server calls  
 
 const getAllVideos = asyncHandler(async (req, res) => {
    
@@ -148,7 +149,6 @@ const getAllVideos = asyncHandler(async (req, res) => {
      const result = await Video.aggregate(pipelineArr)
      .skip(pageOptions.limit*pageOptions.page)
      .limit(pageOptions.limit)
-    // console.log(result.length)
  
       res
       .status(200)
@@ -167,6 +167,43 @@ const getAllVideos = asyncHandler(async (req, res) => {
        message:error?.message||"some error in querying videos"
     })
    }
+})
+
+const getSearchRecommendations = asyncHandler(async (req,res)=>{
+    try {
+        const title = req.query ;
+
+        if(!title) {
+            return res.
+            status(200).
+            json(
+                new ApiResponse(
+                    200,
+                    "nothing searched",
+                    "nothing searched"
+                )
+            )
+        }
+     
+        const videoTitles = await Video.aggregate([
+            {
+               $match:{
+                  title:{
+                    $regex:title,
+                    $options:'i'
+                  }
+               }
+            },{
+              $project:{
+                  title:1
+              }  
+            }
+        ])
+        console.log(videoTitles)
+       
+    }catch (error){
+        
+    }
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
@@ -585,7 +622,7 @@ const channelsVideo = asyncHandler(async (req,res) => {
         })
      }
 })
-
+//TODO: add publicID of cloudinary 
 export {
     getAllVideos,
     publishAVideo,
@@ -594,5 +631,6 @@ export {
     deleteVideo,
     togglePublishStatus,
     getVideoByIdAndWatch,
-    channelsVideo
+    channelsVideo,
+    getSearchRecommendations
 }
