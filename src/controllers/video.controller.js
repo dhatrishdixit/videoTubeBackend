@@ -171,7 +171,8 @@ const getAllVideos = asyncHandler(async (req, res) => {
 
 const getSearchRecommendations = asyncHandler(async (req,res)=>{
     try {
-        const title = req.query ;
+        const {title} = req.query ;
+        console.log(title)
 
         if(!title) {
             return res.
@@ -199,10 +200,37 @@ const getSearchRecommendations = asyncHandler(async (req,res)=>{
               }  
             }
         ])
-        console.log(videoTitles)
+        console.log(videoTitles);
+        if(videoTitles.length == 0){
+            return res.
+            status(200).
+            json(
+                new ApiResponse(
+                    200,
+                    "no match",
+                    "no match"
+                )
+            )
+        }
+
+        
+      return res
+      .status(200)
+      .json(
+         new ApiResponse(
+             200,
+             videoTitles,
+             "videos fetched successFully"
+         )
+      )
        
     }catch (error){
-        
+        res
+        .status(error?.statusCode||500)
+        .json({
+           status:error?.statusCode||500,
+           message:error?.message||"some error in querying searchRecommendation"
+        })
     }
 })
 
