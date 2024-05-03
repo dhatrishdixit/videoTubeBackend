@@ -200,7 +200,6 @@ const getSearchRecommendations = asyncHandler(async (req,res)=>{
               }  
             }
         ])
-        console.log(videoTitles);
         if(videoTitles.length == 0){
             return res.
             status(200).
