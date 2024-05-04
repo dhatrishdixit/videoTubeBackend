@@ -37,6 +37,9 @@ const videoSchema = new mongoose.Schema({
     }
 },{timestamps:true});
 
+// TODO: add public id here along with url 
+
+
 videoSchema.plugin(mongooseAggregatePaginate);
 
 

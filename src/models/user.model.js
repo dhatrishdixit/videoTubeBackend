@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema({
     timestamps:true
 })
 
-
+// TODO: add public id here along with url 
 
 userSchema.pre('save',async function(next){
     if(!this.isModified('password')){
