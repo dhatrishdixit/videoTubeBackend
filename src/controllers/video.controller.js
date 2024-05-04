@@ -172,7 +172,7 @@ const getAllVideos = asyncHandler(async (req, res) => {
 const getSearchRecommendations = asyncHandler(async (req,res)=>{
     try {
         const {title} = req.query ;
-        console.log(title)
+      
 
         if(!title) {
             return res.
