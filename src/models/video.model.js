@@ -7,7 +7,15 @@ const videoSchema = new mongoose.Schema({
         type:String,
         required:true,
     },
+    videoFilePublicId:{
+        type:String,
+        required:true,
+    },
     thumbnail:{
+        type:String,
+        required:true,
+    },
+    thumbnailPublicId:{
         type:String,
         required:true,
     },
@@ -37,7 +45,6 @@ const videoSchema = new mongoose.Schema({
     }
 },{timestamps:true});
 
-// TODO: add public id here along with url 
 
 
 videoSchema.plugin(mongooseAggregatePaginate);

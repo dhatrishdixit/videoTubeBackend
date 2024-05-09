@@ -4,7 +4,7 @@ import {User} from "../models/user.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
-import {uploadOnCloudinary} from "../utils/cloudinary.js"
+import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
 import fs from "fs";
 
 
@@ -276,7 +276,9 @@ const publishAVideo = asyncHandler(async (req, res) => {
      
      const video = await Video.create({
          videoFile:videoFile.secure_url ,
+         videoFilePublicId:videoFile.public_id,
          thumbnail:thumbnail.secure_url ,
+         thumbnailPublicId:thumbnail.public_id,
          owner:ownerId,
          title,
          description,
@@ -473,12 +475,21 @@ const updateVideo = asyncHandler(async (req, res) => {
      
      if(thumbnailLocalPath){ 
          var thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
+         if(video.thumbnailPublicId){
+            deleteFromCloudinary(video.thumbnailPublicId)
+            .catch(err=>console.log(err))
+         }
      }
+
+    
      
      const updatedObj = {};
      if(title) updatedObj.title = title;
      if(description) updatedObj.description = description;
-     if(thumbnailLocalPath) updatedObj.thumbnail = thumbnail.secure_url ;
+     if(thumbnailLocalPath) {
+        updatedObj.thumbnail = thumbnail.secure_url ;
+        updatedObj.thumbnailPublicId = thumbnail.public_id; 
+     }
      
  
      const updatedVideo = await Video.findByIdAndUpdate(
@@ -526,6 +537,14 @@ const deleteVideo = asyncHandler(async (req, res) => {
      if(JSON.stringify(ownerId) !== JSON.stringify(userId)) throw new ApiError(400,"login with owner id")
  
      const deleted = await Video.findByIdAndDelete(new mongoose.Types.ObjectId(videoId));
+     if(video.thumbnailPublicId){
+        console.log("thumbnail publicId",video.thumbnailPublicId)
+        deleteFromCloudinary(video.thumbnailPublicId).catch(err=>console.log(err));
+     }
+     if(video.videoFilePublicId){
+        console.log("videoFile publicId",video.videoFilePublicId)
+        deleteFromCloudinary(video.videoFilePublicId,"video").catch(err=>console.log(err));
+     }
     // console.log(deleted)
  
      return res
@@ -648,7 +667,7 @@ const channelsVideo = asyncHandler(async (req,res) => {
         })
      }
 })
-//TODO: add publicID of cloudinary 
+ 
 export {
     getAllVideos,
     publishAVideo,

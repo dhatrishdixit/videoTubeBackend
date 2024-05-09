@@ -461,7 +461,7 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
  
      const coverImage = await uploadOnCloudinary(coverImageLocalPath);
      if(!coverImage.url) throw new ApiError(500,"file failed to load in cloudinary");
-    // TODO: delete older cover image 
+    
       if(user.coverImagePublicId) await deleteFromCloudinary(user.coverImagePublicId);
      
      const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
