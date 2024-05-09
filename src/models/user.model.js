@@ -30,14 +30,14 @@ const userSchema = new mongoose.Schema({
     },
     avatarPublicId:{
         type:String,
-        default:"",
+        required:true,
     },
     coverImage:{
         type:String,
     },
     coverImagePublicId:{
         type:String,
-        default:"",
+        required:true,
     },
     watchHistory:[
         {

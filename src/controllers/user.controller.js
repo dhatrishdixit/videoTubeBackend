@@ -127,6 +127,8 @@ const registerUser = asyncHandler(async(req,res)=>{
            avatar:avatar.url,
            coverImage:coverImage?.url||"",
            password,
+           avatarPublicId:avatar?.public_id,
+           coverImagePublicId:coverImage?.public_id
       })
       const createdUser = await User.findById(user._id).select('-password -refreshToken');
   
@@ -418,10 +420,14 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
       const avatar = await uploadOnCloudinary(avatarLocalPath);
       if(!avatar.url) throw new ApiError(500,"file failed to load in cloudinary");
     //TODO: delete older image 
-    //   await deleteFromCloudinary(user.avatar);
+      if(user.avatarPublicId){
+        await deleteFromCloudinary(user.avatarPublicId);
+      }
+      
       const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
            $set:{
                  avatar:avatar.url,
+                 avatarPublicId:avatar.public_id
            }
       },{
           new:true
@@ -456,11 +462,12 @@ const updateCoverImage = asyncHandler(async(req,res)=>{
      const coverImage = await uploadOnCloudinary(coverImageLocalPath);
      if(!coverImage.url) throw new ApiError(500,"file failed to load in cloudinary");
     // TODO: delete older cover image 
-    //   if(user.coverImage) await deleteFromCloudinary(user.coverImage);
+      if(user.coverImagePublicId) await deleteFromCloudinary(user.coverImagePublicId);
      
      const updatedUser = await User.findByIdAndUpdate(req.user?._id,{
           $set:{
              coverImage:coverImage.url,
+             coverImagePublicId:coverImage.public_id
           }
      },{
          new:true

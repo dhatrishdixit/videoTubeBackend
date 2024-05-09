@@ -37,25 +37,12 @@ const uploadOnCloudinary = async (localFilePath) =>{
    }
 }
 
-const deleteFromCloudinary = async(url)=>{
+const deleteFromCloudinary = async(public_id)=>{
   
-console.log(url)
-// Split the URL by "/"
-const urlParts = url.split("/");
 
-// Find the index of "Images" in the URL parts
-const imagesIndex = urlParts.indexOf("Images");
-
-// Extract the relevant part
-const desiredPart = urlParts.slice(imagesIndex, imagesIndex + 2).join("/");
-
-// Optionally, remove the file extension
-const desiredPartWithoutExtension = desiredPart.split(".")[0];
- console.log(desiredPartWithoutExtension)
-
-  const response = await cloudinary.uploader.destroy(desiredPartWithoutExtension);
-  console.log(response)
-  //console.log(filePublicID,'image deleted from cloudinary',response);
+  //console.log("prev file deleted ")
+  const response = await cloudinary.uploader.destroy(public_id);
+  //console.log(response)
 
 }
 
