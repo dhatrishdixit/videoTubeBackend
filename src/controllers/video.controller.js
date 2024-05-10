@@ -538,11 +538,11 @@ const deleteVideo = asyncHandler(async (req, res) => {
  
      const deleted = await Video.findByIdAndDelete(new mongoose.Types.ObjectId(videoId));
      if(video.thumbnailPublicId){
-        console.log("thumbnail publicId",video.thumbnailPublicId)
+  
         deleteFromCloudinary(video.thumbnailPublicId).catch(err=>console.log(err));
      }
      if(video.videoFilePublicId){
-        console.log("videoFile publicId",video.videoFilePublicId)
+      
         deleteFromCloudinary(video.videoFilePublicId,"video").catch(err=>console.log(err));
      }
     // console.log(deleted)
