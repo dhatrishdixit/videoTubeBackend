@@ -4,12 +4,12 @@ const subscriptionSchema =  new mongoose.Schema({
     subscriber:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
-        // for user who is subscribed
+     
     },
     channel:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User"
-        // channel which also related to user 
+     
     }
 },{
     timestamps:true
