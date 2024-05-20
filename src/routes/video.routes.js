@@ -8,7 +8,8 @@ import {
     updateVideo,
     getVideoByIdAndWatch,
     channelsVideo,
-    getSearchRecommendations
+    getSearchRecommendations,
+    getAllVideosCount
 } from "../controllers/video.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 import { upload } from "../middlewares/multer.middlewares.js";
@@ -44,5 +45,6 @@ router.route("/w/:videoId").get(getVideoByIdAndWatch);
 router.route("/c/:channelId").get(channelsVideo);
 router.route("/toggle/publish/:videoId").patch(togglePublishStatus);
 router.route("/s/search").get(getSearchRecommendations);
+router.route('/result/counts').get(getAllVideosCount);
 
 export default router

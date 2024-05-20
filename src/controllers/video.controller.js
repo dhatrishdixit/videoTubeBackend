@@ -57,17 +57,13 @@ const getAllVideos = asyncHandler(async (req, res) => {
             }
         }
     )
-
-
-  
-
-   
-
      pipelineArr.push(
          {
              $unwind:"$channel"
          }
      )
+
+     //TODO: think of matching channel also 
      pipelineArr.push(
          {
              $project:{
@@ -167,6 +163,61 @@ const getAllVideos = asyncHandler(async (req, res) => {
     })
    }
 })
+
+const getAllVideosCount = asyncHandler(async (req, res) => {
+    
+   try {
+     const { query } = req.query;
+
+     const result = await Video.aggregate([
+        {
+            $match:{
+                isPublic:true
+            }
+        },
+        {  
+            $match:{
+             title:{
+                 $regex:query,
+                 $options: 'i'
+             }
+            }
+         },
+         {
+            $group: {
+              _id: null,
+              totalCount: { $sum: 1 }
+            }
+          },
+          {
+            $project: {
+              _id: 0,           
+              totalCount: 1
+            }
+          }
+     ])
+ 
+  
+ 
+      res
+      .status(200)
+      .json(
+         new ApiResponse(
+             200,
+             result,
+             "videos fetched successFully"
+         )
+      )
+   } catch (error) {
+    res
+    .status(error?.statusCode||500)
+    .json({
+       status:error?.statusCode||500,
+       message:error?.message||"some error in querying videos"
+    })
+   }
+})
+
 
 const getSearchRecommendations = asyncHandler(async (req,res)=>{
     try {
@@ -677,5 +728,6 @@ export {
     togglePublishStatus,
     getVideoByIdAndWatch,
     channelsVideo,
-    getSearchRecommendations
+    getSearchRecommendations,
+    getAllVideosCount
 }
