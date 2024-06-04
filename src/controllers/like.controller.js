@@ -179,10 +179,52 @@ try {
                         $ne:""
                     }
                 }
+            },{
+                $lookup:{
+                    from:"videos",
+                    localField:"video",
+                    foreignField:"_id",
+                    as:"video",
+                    pipeline:[
+                        {
+                            $lookup:{
+                                from:"users",
+                                localField:"owner",
+                                foreignField:"_id",
+                                as:"owner",
+                            }
+                        },
+                        // can also write unwind here with path of array as $owner
+                    ]
+                }
+            },{
+               $unwind:{
+                 path:"$video"
+               }
+            },{
+                $unwind:{
+                    path:"$video.owner"
+                }
+            },{
+                $project:{
+                    _id:"$_id",
+                    videoFile:"$video.videoFile",
+                    thumbnail:"$video.thumbnail",
+                    title:"$video.title",
+                    duration:"$video.duration",
+                    views:"$video.views",
+                    createdAt:"$video.createdAt",
+                    description:"$video.description",
+                    channel:"$video.owner.username",
+                    channelFullName:"$video.owner.fullName",
+                    channelAvatar:"$video.owner.avatar",
+                    channelId:"$video.owner._id"
+
+                }
             }
         ])
     
-        if(likedVideos.length !== 0){
+        if(likedVideos.length == 0){
             return res.status(200)
             .json(
                 new ApiResponse(200,{
