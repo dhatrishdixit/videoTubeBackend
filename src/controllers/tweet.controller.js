@@ -87,13 +87,15 @@ const getUserTweetsByUsername = asyncHandler(async (req, res) => {
             }
          }
      ]);
-    //  console.log(tweets);
+   
      
-     if(tweets.length == 0) throw new ApiError(400,"no tweets")
+
  
      return res
      .json(
-         new ApiResponse(200,tweets,"tweets fetched successfully")
+         new ApiResponse(200,
+             tweets
+            ,"tweets fetched successfully")
      )
    } catch (error) {
     res

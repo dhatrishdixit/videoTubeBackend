@@ -403,6 +403,7 @@ const getVideoByIdAndWatch = asyncHandler(async (req, res) => {
                  title:1,
                  createdAt:1,
                  isPublic:1,
+                
                  
                }
         },
