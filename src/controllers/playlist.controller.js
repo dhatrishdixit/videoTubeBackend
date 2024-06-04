@@ -41,6 +41,72 @@ const createPlaylist = asyncHandler(async (req, res) => {
   }
 })
 
+const getCurrentUserPlaylist = asyncHandler(async(req,res) =>{
+    const ownerId = req?.user;
+    const playlists = await Playlist.aggregate([
+      {
+        $match:{
+            owner: new mongoose.Types.ObjectId(ownerId),
+        }
+      },{
+        $lookup:{
+          from:"users",
+          localField:"owner",
+          foreignField:"_id",
+          as:"owner"
+        }
+      },{
+        $addFields:{
+          videoFirstElement:{
+            $arrayElemAt:[
+              "$videos",0
+            ]
+          },
+          videos:{
+            $size:{ $ifNull: ["$videos",[]]}
+          }
+        }
+      },{
+        $lookup:{
+          from:"videos",
+          localField:"videoFirstElement",
+          foreignField:"_id",
+          as:"videoFirstElement"
+        }
+      },{
+        $unwind:{
+          path:"$owner",
+          preserveNullAndEmptyArrays:true
+        }
+      },{
+        $unwind:{
+          path:"$videoFirstElement",
+          preserveNullAndEmptyArrays:true
+        }
+      },{
+        $project:{
+            _id:1,
+            description:1,
+            name:1,
+            ownerId:"$owner._id",
+            ownerUsername:"$owner.username",
+            ownerFullname:"$owner.fullName",
+            FirstVideoThumbnail:"$videoFirstElement.thumbnail",
+            videos:1,
+            
+        }
+      }
+    ]);
+
+  
+
+    res
+       .status(200)
+       .json(
+           new ApiResponse(200,playlists,"playlists fetched")
+       )
+})
+
 const getUserPlaylists = asyncHandler(async (req, res) => {
  try {
        const {userId} = req.params
@@ -432,5 +498,6 @@ export {
     removeVideoFromPlaylist,
     deletePlaylist,
     updatePlaylist,
-    getUserPlaylistsByUsername
+    getUserPlaylistsByUsername,
+    getCurrentUserPlaylist
 }

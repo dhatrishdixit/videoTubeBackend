@@ -7,7 +7,6 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const toggleVideoLike = asyncHandler(async (req, res) => {
   try {
       const {videoId} = req.params
-      // toggle like on video
       const user = req.user?._id;
       if(!videoId) throw new ApiError(400,"video id is missing");
   
@@ -61,7 +60,6 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 const toggleCommentLike = asyncHandler(async (req, res) => {
  try {
        const {commentId} = req.params
-       // toggle like on comment 
        const user = req.user?._id;
        if(!commentId) throw new ApiError(400,"video id is missing");
    
@@ -114,7 +112,6 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 const toggleTweetLike = asyncHandler(async (req, res) => {
     try {
         const {tweetId} = req.params
-        // toggle like on tweet
         const user = req.user?._id;
         if(!tweetId) throw new ApiError(400,"video id is missing");
     
@@ -164,7 +161,6 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 
 const getLikedVideos = asyncHandler(async (req, res) => {
 try {
-        // get all liked videos
         const user = req.user?._id;
         
         const likedVideos = await Like.aggregate([
