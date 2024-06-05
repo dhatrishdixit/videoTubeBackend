@@ -50,6 +50,22 @@ const userSchema = new mongoose.Schema({
     },
     refreshToken:{
         type:String
+    },
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    verifyEmailToken:{
+        type:string,
+    },
+    verifyEmailTokenExpiry:{
+        type:Date,
+    },
+    forgotPasswordToken:{
+        type:string,
+    },
+    forgotPasswordTokenExpiry:{
+        type:Date,
     }
 },{
     timestamps:true

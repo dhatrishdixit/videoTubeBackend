@@ -97,7 +97,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     
       if(existedUser){
          fs.unlinkSync(req.files?.avatar[0]?.path)  
-         if(req.files.converImage){
+         if(req.files.coverImage){
            fs.unlinkSync(req.files?.coverImage[0]?.path)
          }
         
@@ -345,6 +345,10 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
        originOfError:"user controller"
     })
    }
+});
+
+const verifyEmail = asyncHandler(async(req,res)=>{
+
 })
 
 const getCurrentUser = asyncHandler(async(req,res)=>{
