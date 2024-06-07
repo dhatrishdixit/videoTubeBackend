@@ -131,6 +131,14 @@ const registerUser = asyncHandler(async(req,res)=>{
            coverImagePublicId:coverImage?.public_id
       })
       const createdUser = await User.findById(user._id).select('-password -refreshToken');
+    // think of oauth later 
+    //TODO: send email when verified pass jwt token to the cookie
+    // create token and date - fill those field in data base 
+    // give the link to user via email and all so right email is valid for 30 mins 
+    // then when user hits /verifyEmail or something ,with the same values of token , and check whether the date milliseconds are less than the set or something
+    // if times up then do something same 
+    // for password 
+    // based on that verify 
   
       if(!createdUser) throw new ApiError(500,'user not registered try again ')
   
@@ -191,7 +199,7 @@ const loginUser = asyncHandler(async(req,res)=>{
       
       const loggedInUser = await User.findById(user._id).select('-password -refreshToken -updatedAt -__v');
   
-   
+     //TODO: send email when verified pass jwt token to the cookie
        
       return res
       .status(200)

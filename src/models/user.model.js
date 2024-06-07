@@ -56,16 +56,19 @@ const userSchema = new mongoose.Schema({
         default:false
     },
     verifyEmailToken:{
-        type:string,
+        type:String,
     },
     verifyEmailTokenExpiry:{
         type:Date,
     },
     forgotPasswordToken:{
-        type:string,
+        type:String,
     },
     forgotPasswordTokenExpiry:{
         type:Date,
+    },
+    googleId:{
+        type:String,
     }
 },{
     timestamps:true

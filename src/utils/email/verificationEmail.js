@@ -1,3 +1,4 @@
+export const verificationEmail = `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,3 +35,5 @@
     </table>
 </body>
 </html>
+
+`
