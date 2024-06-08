@@ -11,7 +11,10 @@ import {
     updateCoverImage, 
     updateCurrentUser, 
     updateUserAvatar,
-    verifyEmail
+    verifyEmail,
+    sendEmailForPasswordOtp,
+    verifyOtp,
+    resetPassword
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -43,5 +46,8 @@ router.route('/update-coverImage').patch(verifyJWT,upload.single('coverImage'),u
 router.route("/c/:username").get(verifyJWT,getUserChannelProfile);
 router.route("/watch-history").get(verifyJWT,getWatchHistory);
 router.route("/verify-email").post(verifyEmail);
+router.route("/send-email-for-password-otp").post(sendEmailForPasswordOtp);
+router.route("/verify-otp").post(verifyOtp);
+router.route("/reset-password").post(resetPassword);
 
 export default router ;

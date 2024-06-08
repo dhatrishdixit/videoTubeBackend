@@ -156,12 +156,12 @@ const registerUser = asyncHandler(async(req,res)=>{
 
 
 const loginUser = asyncHandler(async(req,res)=>{
-     // req body -> data
+    // req body -> data
     // username or email
-    //find the user
-    //password check
-    //access and referesh token
-    //send cookie
+    // find the user
+    // password check
+    // access and referesh token
+    // send cookie
 
 
   try {
@@ -252,7 +252,7 @@ const logoutUser = asyncHandler(async (req,res)=>{
 const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
  try {
        const incomingRefreshToken = req.cookies?.refreshToken || req.header?.refreshToken;
-       //console.log(incomingRefreshToken);
+      
        if(!incomingRefreshToken) throw new ApiError(401,"refreshToken is absent")
    
          let decodedToken ;
@@ -330,6 +330,119 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
     })
    }
 });
+
+const sendEmailForPasswordOtp = asyncHandler(async(req,res)=>{
+    try {
+        console.log(req.body);
+        // TODO: send email through body only
+        //  console.log(req.user);
+        const {email} = req.body;
+        if(!email) throw new ApiError(400,"email is absent");
+
+  
+
+        await sendEmail("Reset Password",email,"");
+
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200, 
+                {},
+                "otp send successfully successfully"
+            )
+        )
+
+
+    } catch (error) {
+        res
+        .status(error?.statusCode||500)
+        .json({
+           status:error?.statusCode||500,
+           message:error?.message||" error in sending email for password otp ",
+           originOfError:"user controller"
+        })
+    }
+})
+
+const verifyOtp = asyncHandler(async(req,res)=>{
+    try{
+       const { otp } = req.body;
+       if(!otp) throw new ApiError(400,"otp is absent");
+
+       const user = await User.findOne({
+        forgotPasswordToken:otp
+       });
+
+       if(!user) throw new ApiError(400,"invalid otp");
+
+       if(Date.now()>user.forgotPasswordTokenExpiry){
+         await sendEmail("Reset Password",user.email,"");
+         throw new ApiError(410,"otp has expired and a new otp has been sent through email");
+       }
+
+       user.forgotPasswordToken = "";
+       user.forgotPasswordTokenExpiry = "";
+       await user.save({
+        validateBeforeSave:false
+       })
+
+       res.status(200).json(new ApiResponse(200,{
+        success:true,
+        email:user.email
+       },'otp verified successfully'))    
+    }
+    catch(error){
+        res
+        .status(error?.statusCode||500)
+        .json({
+           status:error?.statusCode||500,
+           message:error?.message||"some error in registering user ",
+           originOfError:"user controller"
+        })
+    }
+});
+
+const resetPassword = asyncHandler(async(req,res)=>{
+    try {
+     const {newPassword,confirmNewPassword,email,verifyOtp} = req.body;
+     // verify otp is true or false 
+     if(!verifyOtp) throw new ApiError(400,'verify otp first');
+     if(!newPassword || !confirmNewPassword) throw new ApiError(400,'enter both password');
+     if(!email) throw new ApiError(400,'email is absent');
+ 
+     const user = await User.findById(email);
+ 
+     const isPasswordCorrect = newPassword == confirmNewPassword ;
+     if(!isPasswordCorrect) throw new ApiError(400,"both password don't match");
+ 
+     user.password = newPassword ;
+     await user.save({
+         validateBeforeSave:false
+     });
+     
+     return res
+     .status(200)
+     .json(
+         new ApiResponse(
+             200,
+             {success:"true"},
+             "password changed successfully"
+         )
+     )
+ 
+    } catch (error) {
+    
+     res
+     .status(error?.statusCode||500)
+     .json({
+        status:error?.statusCode||500,
+        message:error?.message||"some error in registering user ",
+        originOfError:"user controller"
+     })
+    }
+ });
+
 
 const verifyEmail = asyncHandler(async(req,res)=>{
     try {
@@ -449,7 +562,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
   
       const avatar = await uploadOnCloudinary(avatarLocalPath);
       if(!avatar.url) throw new ApiError(500,"file failed to load in cloudinary");
-    //TODO: delete older image 
+      
       if(user.avatarPublicId){
         await deleteFromCloudinary(user.avatarPublicId);
       }
@@ -701,5 +814,8 @@ export {
     updateCoverImage,
     getUserChannelProfile,
     getWatchHistory,
-    verifyEmail
+    verifyEmail,
+    sendEmailForPasswordOtp,
+    verifyOtp,
+    resetPassword
 };
