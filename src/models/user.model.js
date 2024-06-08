@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema({
     forgotPasswordTokenExpiry:{
         type:Date,
     },
+    resetPasswordAccess:{
+        type:String,
+    }
     // googleId:{
     //     type:String,
     // }
@@ -80,6 +83,7 @@ userSchema.pre('save',async function(next){
     if(!this.isModified('password')){
         return next();
     }
+    //console.log(this.isModified('password'));
     this.password = await bcrypt.hash(this.password,10);
     return next();
 })

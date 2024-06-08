@@ -14,7 +14,8 @@ import {
     verifyEmail,
     sendEmailForPasswordOtp,
     verifyOtp,
-    resetPassword
+    resetPassword,
+    sendVerificationEmail
 } from "../controllers/user.controller.js";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middleware.js";
@@ -49,5 +50,6 @@ router.route("/verify-email").post(verifyEmail);
 router.route("/send-email-for-password-otp").post(sendEmailForPasswordOtp);
 router.route("/verify-otp").post(verifyOtp);
 router.route("/reset-password").post(resetPassword);
+router.route("/send-email-for-verification").post(sendVerificationEmail);
 
 export default router ;

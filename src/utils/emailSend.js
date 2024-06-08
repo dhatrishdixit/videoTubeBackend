@@ -11,7 +11,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // types - verify email,password forgot , password change , forgot password 
 // have same token for both work on password 
 
-export async function sendEmail(type,emailId,username){
+export async function sendEmail(type,emailId){
     
    try {
     const user = await User.findOne({email:emailId});
@@ -30,12 +30,11 @@ export async function sendEmail(type,emailId,username){
             //to: emailId,
             to:"dhatrish29@gmail.com",
             subject: "ClipSync | Verification Email",
-            html: verificationEmail(username,verificationToken),
+            html: verificationEmail(user.username,verificationToken),
           });
-          console.log("data :",data);
-          console.log("error :",error);
+       
           await user.save();
-          console.log(user);
+      
       }
    else{
          //forgotPasswordToken  and  forgotPasswordTokenExpiry
@@ -49,14 +48,13 @@ export async function sendEmail(type,emailId,username){
             subject: "ClipSync | Request for Forgot Password",
             html: passwordResetEmail(otp),
           });
-          console.log("data :",data);
-          console.log("error :",error);
+     
           await user.save();
-          console.log(user);
+        
          
       }   
    } catch (error) {
-      console.log("email error : ",error);
+      console.log("email error in emailSend utils : ",error);
    }
   
 }
