@@ -70,6 +70,7 @@ const userSchema = new mongoose.Schema({
     // googleId:{
     //     type:String,
     // }
+    //TODO: have forgot password access 
 },{
     timestamps:true
 })
