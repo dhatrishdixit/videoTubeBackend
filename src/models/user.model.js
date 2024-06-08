@@ -67,9 +67,9 @@ const userSchema = new mongoose.Schema({
     forgotPasswordTokenExpiry:{
         type:Date,
     },
-    googleId:{
-        type:String,
-    }
+    // googleId:{
+    //     type:String,
+    // }
 },{
     timestamps:true
 })

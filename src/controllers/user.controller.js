@@ -6,6 +6,7 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 import fs from 'fs';
 import jwt from 'jsonwebtoken';
 import mongoose from "mongoose";
+import { sendEmail } from '../utils/emailSend.js';
 
 
 
@@ -103,16 +104,6 @@ const registerUser = asyncHandler(async(req,res)=>{
         
          throw new ApiError(409,'user already exists in the dataBase')
       }
-      // console.log('body: ',req.body);
-      // console.log('file: ',req.files);
-     
-      
-    //  const coverImageLocalPath = req.files?.coverImage[0]?.path;
-    // here when we get req.files and dont get coverImage from  it we get the error of undefined 
-    // aur yahan pur agar coverimage nhi diya hai toh woh toh undefined hoga aur hum usko property yani zeroth index ko access karenge toh milega cannot access property of undefined 
-    // ? this checks only the left side of it and if it is undefined then it prevents the error('cant access property of undefined') and gives out undefined
-   
-    //  console.log("__________________",coverImageLocalPath)
   
       const avatar = await uploadOnCloudinary(avatarLocalPath)
       let coverImage;
@@ -140,10 +131,13 @@ const registerUser = asyncHandler(async(req,res)=>{
     // for password 
     // based on that verify 
   
-      if(!createdUser) throw new ApiError(500,'user not registered try again ')
+      if(!createdUser) throw new ApiError(500,'user not registered try again ');
+
+     
+      await sendEmail("verification",createdUser.email,createdUser.username);
   
       return res.status(201).json(
-          new ApiResponse(201,createdUser,'user registered successfully')
+          new ApiResponse(201,createdUser,'user registered successfully & verification mail sent')
       )
   
   } catch (error) {
@@ -160,17 +154,6 @@ const registerUser = asyncHandler(async(req,res)=>{
     
 }) 
 
-// const registerUser =async function (req,res){
-//     //    const result = await new Promise((resolve,reject)=>{
-//     //     setTimeout(()=>{
-//     //         resolve('hello')
-//     //     },5000)
-//     //    })
-//        res.status(200).json({
-//         status:'ok',
-//         // message:result
-//        })
-// }
 
 const loginUser = asyncHandler(async(req,res)=>{
      // req body -> data
@@ -199,7 +182,7 @@ const loginUser = asyncHandler(async(req,res)=>{
       
       const loggedInUser = await User.findById(user._id).select('-password -refreshToken -updatedAt -__v');
   
-     //TODO: send email when verified pass jwt token to the cookie
+   
        
       return res
       .status(200)
@@ -269,25 +252,18 @@ const logoutUser = asyncHandler(async (req,res)=>{
 const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
  try {
        const incomingRefreshToken = req.cookies?.refreshToken || req.header?.refreshToken;
-       console.log(incomingRefreshToken);
+       //console.log(incomingRefreshToken);
        if(!incomingRefreshToken) throw new ApiError(401,"refreshToken is absent")
    
          let decodedToken ;
-          try {
              decodedToken = jwt.verify(incomingRefreshToken,process.env.REFRESH_TOKEN_SECRET);
-          } catch (error) {
-       //      console.log('error at decoding ',error.message)
-          }
-   
-   //console.log(decodedToken)
+  
+
        const user = await User.findById(decodedToken?.id).select("-password");
-       // console.log(user)
+     
        if(!user){
            throw new ApiError(401,'invalid refresh token');
        }
-    //    console.log("refresh token from cookie : ",incomingRefreshToken);
-    //    console.log("refresh token from database",user.refreshToken)
-    //    console.log(incomingRefreshToken == user.refreshToken)
        if(incomingRefreshToken !== user?.refreshToken){
            throw new ApiError(401,"refreshToken is expired");
        }
@@ -356,6 +332,48 @@ const changeCurrentPassword = asyncHandler(async(req,res)=>{
 });
 
 const verifyEmail = asyncHandler(async(req,res)=>{
+    try {
+        const { token } = req.body;
+        if(!token) throw new ApiError(403,"verifyToken is absent")
+        const user = await User
+                           .findOne({ verifyEmailToken : token})
+                           .select("-password -refreshToken -accessToken");
+    
+        if(!user) throw new ApiError(400,"invalid token");
+        
+        if(Date.now()>user.verifyEmailTokenExpiry){
+        await sendEmail("verification",user.email,user.username);
+        throw new ApiError(410," verify token has expired and a new verification mail has been sent please verify");
+        }
+  
+    
+        user.isVerified = true ;
+        user.verifyEmailToken = "" ;
+        user.verifyEmailTokenExpiry="";
+        
+        await user.save({
+            validateBeforeSave:false
+        });
+        //console.log(user);
+       
+        return res
+        .status(200)
+        .json(
+            new ApiResponse(
+                200,
+                user,
+                "email verified successfully"
+            )
+        )
+    } catch (error) {
+        res
+        .status(error?.statusCode||500)
+        .json({
+           status:error?.statusCode||500,
+           message:error?.message||"some error in getting verifying user email ",
+           originOfError:"user controller"
+        })
+    }
 
 })
 
@@ -682,5 +700,6 @@ export {
     updateUserAvatar,
     updateCoverImage,
     getUserChannelProfile,
-    getWatchHistory
+    getWatchHistory,
+    verifyEmail
 };
