@@ -47,6 +47,7 @@ export async function sendEmail(type,emailId){
             //from: "ClipSync <onboarding@resend.dev>",
             //from: "ClipSync <auth@clipsync.in.net>",
             from: "ClipSync <auth@resend.dhatrish.online>",
+            //TODO: before shipping make sure emailId is there
             //to: emailId,
             to:"official.dhatrishdixit@gmail.com",
             subject: "ClipSync | Request for Forgot Password",
