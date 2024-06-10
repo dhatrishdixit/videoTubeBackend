@@ -26,7 +26,9 @@ export async function sendEmail(type,emailId){
       user.verifyEmailTokenExpiry = Date.now() + 1800000 ; // 30 minutes from now
         // add frontend url to the button 
         const { data, error } = await resend.emails.send({
-            from: "ClipSync <onboarding@resend.dev>",
+            //from: "ClipSync <onboarding@resend.dev>",
+            //from: "ClipSync <resend@clipsync.in.net>",
+            from: "ClipSync <auth@resend.dhatrish.online>",
             //to: emailId,
             to:"dhatrish29@gmail.com",
             subject: "ClipSync | Verification Email",
@@ -42,16 +44,18 @@ export async function sendEmail(type,emailId){
          user.forgotPasswordToken = otp;
          user.forgotPasswordTokenExpiry = Date.now() + 600000;
          const { data, error } = await resend.emails.send({
-            from: "ClipSync <onboarding@resend.dev>",
+            //from: "ClipSync <onboarding@resend.dev>",
+            //from: "ClipSync <auth@clipsync.in.net>",
+            from: "ClipSync <auth@resend.dhatrish.online>",
             //to: emailId,
-            to:"dhatrish29@gmail.com",
+            to:"official.dhatrishdixit@gmail.com",
             subject: "ClipSync | Request for Forgot Password",
             html: passwordResetEmail(otp),
           });
-     
+          console.log(data);
+          console.log(error);
           await user.save();
         
-         
       }   
    } catch (error) {
       console.log("email error in emailSend utils : ",error);
