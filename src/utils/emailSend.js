@@ -13,7 +13,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendEmail(res,type,emailId){
    //TODO: think of adding res as parameter 
-    
+   // TODO: think of using this as a middleware 
    try {
     const user = await User.findOne({email:emailId});
    
