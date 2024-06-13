@@ -1,4 +1,5 @@
 export const passwordResetEmail = (otp) => {
+    //TODO: important have frontend site link in environment variable
     return `<!DOCTYPE html>
     <html lang="en">
     <head>

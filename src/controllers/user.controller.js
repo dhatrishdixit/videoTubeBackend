@@ -136,7 +136,7 @@ const registerUser = asyncHandler(async(req,res)=>{
       if(!createdUser) throw new ApiError(500,'user not registered try again ');
 
      
-      await sendEmail("verification",createdUser.email);
+      await sendEmail(res,"verification",createdUser.email);
   
       return res.status(201).json(
           new ApiResponse(201,createdUser,'user registered successfully & verification mail sent')
@@ -164,7 +164,7 @@ try {
         const {email} = req.body;
         if(!email) throw new ApiError(400,'email is required for verification mail ');
         
-        await sendEmail("verification",email);
+        await sendEmail(res,"verification",email);
         return res.status(200).json(
             new ApiResponse(200,'verification mail sent')
         )
@@ -261,13 +261,13 @@ const logoutUser = asyncHandler(async (req,res)=>{
      
      return res
      .status(201)
-     .clearCookie('accessToken',options)
-     .clearCookie('refreshToken',options)
+     .clearCookie('accessToken',accessTokenCookieOptions)
+     .clearCookie('refreshToken',refreshTokenCookieOptions)
      .json(
          new ApiResponse(201,{},"user logged out")
      )
    } catch (error) {
-      
+
     res
     .status(error?.statusCode||500)
     .json({
@@ -369,7 +369,7 @@ const sendEmailForPasswordOtp = asyncHandler(async(req,res)=>{
 
   
 
-        await sendEmail("Reset Password",email);
+        await sendEmail(res,"Reset Password",email);
 
         return res
         .status(200)
@@ -405,7 +405,7 @@ const verifyOtp = asyncHandler(async(req,res)=>{
        if(!user) throw new ApiError(400,"invalid otp");
 
        if(Date.now()>user.forgotPasswordTokenExpiry){
-         await sendEmail("Reset Password",user.email);
+         await sendEmail(res,"Reset Password",user.email);
          throw new ApiError(410,"otp has expired and a new otp has been sent through email");
        }
        
@@ -484,7 +484,7 @@ const verifyEmail = asyncHandler(async(req,res)=>{
         if(!user) throw new ApiError(400,"invalid token");
         
         if(Date.now()>user.verifyEmailTokenExpiry){
-        await sendEmail("verification",user.email);
+        await sendEmail(res,"verification",user.email);
         throw new ApiError(410," verify token has expired and a new verification mail has been sent please verify");
         }
   

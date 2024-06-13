@@ -1,4 +1,5 @@
 export const verificationEmail = (username,verificationToken) => {
+      //TODO: important have frontend site link in environment variable
     return `<!DOCTYPE html>
     <html lang="en">
     <head>
@@ -20,7 +21,7 @@ export const verificationEmail = (username,verificationToken) => {
                             <td style="padding: 20px; text-align: center;">
                                 <h2>Thank you ${username} for signing up!</h2>
                                 <p>Please verify your email address by clicking the link below (link is valid for 30mins):</p>
-                                <a href="${verificationToken}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #007bff; text-decoration: none; border-radius: 5px;">Click Here</a>
+                                <a href="${process.env.FRONTEND_URI}/verifyEmail/${verificationToken}" style="display: inline-block; padding: 10px 20px; font-size: 16px; color: #ffffff; background-color: #007bff; text-decoration: none; border-radius: 5px;">Click Here</a>
                                 <p>If you did not sign up for an account, please ignore this email.</p>
                             </td>
                         </tr>
