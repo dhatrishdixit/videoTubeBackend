@@ -325,8 +325,9 @@ const refreshAccessTokenHandler = asyncHandler(async(req,res)=>{
 
 const changeCurrentPassword = asyncHandler(async(req,res)=>{
    try {
-    const {oldPassword,newPassword} = req.body;
+    const {oldPassword,newPassword,confirmPassword} = req.body;
     
+    if(newPassword != confirmPassword) throw new ApiError(400,'new password and confirm password are not same ');
     if(!newPassword) throw new ApiError(400,'enter new password');
     const user = await User.findById(req.user?._id);
 
@@ -559,7 +560,14 @@ const updateCurrentUser = asyncHandler(async(req,res)=>{
                 new:true
             }
          ).select("-password");
-
+         
+         if(email){
+            user.isVerified = false;
+         }
+         await user.save({
+            validateBeforeSave:false
+         });
+         
          res
          .status(201)
          .json(

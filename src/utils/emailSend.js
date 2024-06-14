@@ -62,7 +62,7 @@ export async function sendEmail(res,type,emailId){
       .status(error?.statusCode||500)
       .json({
          status:error?.statusCode||500,
-         message:error?.message||" error in email ",
+         message:error||" error in email ",
          originOfError:"email send util"
       })
    }
