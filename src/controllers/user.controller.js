@@ -546,13 +546,14 @@ const getCurrentUser = asyncHandler(async(req,res)=>{
 
 const updateCurrentUser = asyncHandler(async(req,res)=>{
      try {
-         const {firstName,email} = req.body;
-         if(!firstName && !email) throw new ApiError(400,"nothing changed")
+        console.log("body : ",req.body);
+         const {fullName,email} = req.body;
+         if(!fullName && !email) throw new ApiError(400,"nothing changed")
          if(!req.user) throw new ApiError(400,"user not logged in");
          const user = await User.findByIdAndUpdate(
             req.user?._id,{
                 $set:{
-                    firstName,
+                    fullName,
                     email
                 }
             },
@@ -567,7 +568,7 @@ const updateCurrentUser = asyncHandler(async(req,res)=>{
          await user.save({
             validateBeforeSave:false
          });
-         
+
          res
          .status(201)
          .json(
@@ -594,7 +595,8 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
       const user = req.user;
       if(!user) throw new ApiError(400,"user not logged in")
       const avatarLocalPath = req.file?.path;
-     
+      console.log(avatarLocalPath)
+      console.log("avatar updating")
       if(!avatarLocalPath) throw new ApiError(400,"avatar is missing")
   
       const avatar = await uploadOnCloudinary(avatarLocalPath);
@@ -609,7 +611,7 @@ const updateUserAvatar = asyncHandler(async(req,res)=>{
                  avatar:avatar.url,
                  avatarPublicId:avatar.public_id
            }
-      },{
+      },{ 
           new:true
        }).select("-password");
        

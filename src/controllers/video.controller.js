@@ -318,7 +318,8 @@ const publishAVideo = asyncHandler(async (req, res) => {
      }
      
      const ownerId = req.user?._id ;
-     if(!ownerId) throw new ApiError(401,"user not loggedin");
+     const ownerEmail = req.user?.email;
+     if(!ownerId ||!ownerEmail) throw new ApiError(401,"user not loggedin");
  
      const videoFile = await uploadOnCloudinary(videoFileLocalPath);
      const thumbnail = await uploadOnCloudinary(thumbnailLocalPath);
@@ -343,6 +344,7 @@ const publishAVideo = asyncHandler(async (req, res) => {
      .json(
          new ApiResponse(201,video,"video is published")
      )
+     //TODO: send email from here 
    } catch (error) {
      res
      .status(error?.statusCode||500)
