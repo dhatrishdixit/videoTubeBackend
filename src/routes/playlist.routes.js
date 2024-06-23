@@ -16,7 +16,6 @@ import {verifyJWT} from "../middlewares/auth.middleware.js"
 const router = Router();
 
 router.use(verifyJWT); // Apply verifyJWT middleware to all routes in this file
-// all playlist are private check that 
 router.route("/").post(createPlaylist)
 
 router

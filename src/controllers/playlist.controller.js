@@ -220,8 +220,6 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
 const getPlaylistById = asyncHandler(async (req, res) => {
    try {
      const {playlistId} = req.params
-   
-
      
      if(!playlistId) throw new ApiError(400,"playlist id is not present");
  
@@ -280,6 +278,7 @@ const getPlaylistById = asyncHandler(async (req, res) => {
                 _id:1,
                 owner:"$owner.username",
                 ownerAvatar:"$owner.avatar",
+                ownerId:"$owner._id",
                 createdAt:1,
                 name:1,
                 description:1,
