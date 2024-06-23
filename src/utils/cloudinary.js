@@ -1,8 +1,6 @@
 import {v2 as cloudinary} from "cloudinary";
 import fs from 'fs'
 
-// unlink is the process for delete
-
      
 cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
@@ -12,7 +10,6 @@ cloudinary.config({
 
 const uploadOnCloudinary = async (localFilePath) =>{
    try {
-    //uploading file to cloudinary 
      if(!localFilePath){
         console.log('file path not found');
         return null ;
@@ -21,28 +18,24 @@ const uploadOnCloudinary = async (localFilePath) =>{
      const response = await cloudinary.uploader.upload(localFilePath,{
         resource_type:'auto'
      })
-    // console.log(response.public_id);
-   //  console.log("file is successfully uploaded: ",response.url);
-     
-     // after file is successfully uploaded unlink the file in localstorage or operating system 
-     
-   // console.log("response returned from cloudinary ::",response)
-   
    fs.unlinkSync(localFilePath)
      return response;
 
    } catch (error) {
-     console.log('cloudinary error : ',error);
+     console.log('error while uploading in cloudinary : ',error);
      return null;
    }
 }
 
 const deleteFromCloudinary = async(public_id,resource_type="image")=>{
   
+  try {
+    const response = await cloudinary.uploader.destroy(public_id,{resource_type});
+  } catch (error) {
+    console.log("error in deleting cloudinary assets :",error);
+  }
 
-  // console.log("prev file deleted ")
-  const response = await cloudinary.uploader.destroy(public_id,{resource_type});
-  //console.log(response," ",public_id,resource_type)
+
 }
 
 

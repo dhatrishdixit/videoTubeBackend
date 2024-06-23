@@ -322,14 +322,9 @@ const addVideoToPlaylist = asyncHandler(async (req, res) => {
         const permission = JSON.stringify(userId) === JSON.stringify(ownerId);
         
         if(!permission) throw new ApiError('login with owner id to add video to playlist');
-        const video = await Video.findById(videoId)
-      //  console.log(video)
+        const video = await Video.findById(videoId);
         playlist.videos.push(video?._id);
         const updatedVideosArr = playlist.videos;
-      //  console.log(updatedVideosArr)
-        // can also just save it that is save playlist 
-        // await playlist.save() check this 
-        // can also give out a better array with video info 
         const updatedPlaylist = await Playlist.findByIdAndUpdate(playlistId,
             {
                 videos:updatedVideosArr
@@ -369,16 +364,6 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
      const permission = JSON.stringify(userId) === JSON.stringify(ownerId);
      
      if(!permission) throw new ApiError('login with owner id to delete a video from playlist');
-     //  check this method
-     // if error try JSON.stringify
-     // console.log(typeof JSON.stringify(playlist.videos[0]._id))
-     // console.log(typeof videoId)
-     // playlist.videos.forEach(video => {
-     //     console.log(JSON.stringify(video._id))
-     //     console.log(JSON.stringify(video._id) !== JSON.stringify(videoId))
-     // })
-     // can also add a method of deleting only one video of a an id 
- 
      const updatedVideosArr = playlist.videos.filter(video => JSON.stringify(video._id) !== JSON.stringify(videoId));
      // console.log(updatedVideosArr);
      
@@ -392,11 +377,6 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
      .json(
          new ApiResponse(200,updatedPlaylist,"video deleted from the playlist")
      )
- 
-     // first just console.log playlist object 
-     // await Playlist.updateOne({
-     //     _id:new mongoose.Types.ObjectId()
-     // })
    } catch (error) {
     res
     .status(error?.statusCode||500)
@@ -493,6 +473,36 @@ const updatePlaylist = asyncHandler(async (req, res) => {
    }
 })
 
+const togglePlaylistAccess = asyncHandler(async(req,res)=>{
+  try {
+    
+    const { playlistId,userId } = req.params;
+    
+    const playlist = await Playlist.findById(playlistId);
+    
+     if(!playlist) throw new ApiError(400,"playlist with this id not present")
+    
+     const permission = userId == playlist.owner.toString();
+     if(!permission) throw new ApiError(400,"owner can only update playlist setting");
+
+     playlist.isPublic = !playlist.isPublic;
+     await playlist.save();
+
+    res.status(200)
+    .json(
+        new ApiResponse(200,playlist,`playlist accessibility changed to ${playlist.isPublic}`)
+    )
+  } catch (error) {
+   res
+   .status(error?.statusCode||500)
+   .json({
+      status:error?.statusCode||500,
+      message:error?.message||"some error while changing access to the playlist",
+      originOfError:"playlist controller"
+   })
+  }
+})
+
 export {
     createPlaylist,
     getUserPlaylists,
@@ -502,5 +512,6 @@ export {
     deletePlaylist,
     updatePlaylist,
     getUserPlaylistsByUsername,
-    getCurrentUserPlaylist
+    getCurrentUserPlaylist,
+    togglePlaylistAccess
 }
