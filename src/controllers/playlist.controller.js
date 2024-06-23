@@ -9,11 +9,8 @@ import { Video } from "../models/video.model.js"
 
 const createPlaylist = asyncHandler(async (req, res) => {
   try {
-      const {name, description} = req.body
-      
-      // create playlist
-      if(!name || !description) throw new ApiError(400,"enter both name and description of playlist") 
-  
+      const {name, description,isPublic=true} = req.body;
+      if(!name || !description) throw new ApiError(400,"enter both name and description  of playlist") 
       const ownerId = req.user?._id;
   
       if(!ownerId) throw new ApiError(400,"user should login ");
@@ -21,7 +18,8 @@ const createPlaylist = asyncHandler(async (req, res) => {
       const playlist = await Playlist.create({
           name,
           description,
-          owner:ownerId
+          owner:ownerId,
+          isPublic
       });
   
       res

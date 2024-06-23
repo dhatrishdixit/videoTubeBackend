@@ -45,7 +45,7 @@ const videoSchema = new mongoose.Schema({
     }
 },{timestamps:true});
 
-
+//TODO: think of adding playlist to this so as to keep track of playlists in which it is stored 
 
 videoSchema.plugin(mongooseAggregatePaginate);
 

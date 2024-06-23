@@ -6,6 +6,7 @@ import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
 import {deleteFromCloudinary, uploadOnCloudinary} from "../utils/cloudinary.js"
 import fs from "fs";
+import { sendEmail } from "../utils/emailSend.js"
 
 
 const getAllVideos = asyncHandler(async (req, res) => {
@@ -338,12 +339,15 @@ const publishAVideo = asyncHandler(async (req, res) => {
          isPublic:req.body.isPublic == "false" ? false : true
         
      })
-     
+     //console.log("mail sent")
+     await sendEmail(res,"publishVideo",ownerEmail,video._id,video.title);
      return res
      .status(201)
      .json(
          new ApiResponse(201,video,"video is published")
      )
+     // video/:videoId
+     
      //TODO: send email from here 
    } catch (error) {
      res

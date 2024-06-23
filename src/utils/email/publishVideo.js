@@ -1,5 +1,6 @@
-export const publishEmail = () =>{
-    //TODO: get frontend video url 
+export const publishEmail = (videoId,videoTitle) =>{
+ console.log(`${process.env.FRONTEND_URI}/video/${videoId}`);
+    
     return `
     <!DOCTYPE html>
 <html lang="en">
@@ -63,9 +64,8 @@ export const publishEmail = () =>{
                 <table class="content" align="center">
                     <tr>
                         <td style="padding: 20px; text-align: center;">
-                            <h2>Your Video is Published!</h2>
-                            <p>We are excited to inform you that your video has been successfully published. Click the button below to view your video:</p>
-                            <a href="YOUR_VIDEO_LINK_HERE" class="button">View Published Video</a>
+                            <h2>Your Video "${videoTitle}" is Published!</h2>
+                            <p>We are excited to inform you that your video has been successfully published. </p>
                             <p>Thank you for sharing your content with us!</p>
                         </td>
                     </tr>
@@ -74,7 +74,7 @@ export const publishEmail = () =>{
         </tr>
         <tr>
             <td class="footer">
-                &copy; 2024 Your Company. All rights reserved.
+                &copy; 2024 Clip Sync. All rights reserved.
             </td>
         </tr>
     </table>

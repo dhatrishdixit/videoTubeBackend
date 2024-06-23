@@ -4,6 +4,7 @@ import { User } from '../models/user.model.js';
 import { generateOTP, generateVerificationToken } from './generateTokens.js';
 import { verificationEmail } from './email/verificationEmail.js';
 import { passwordResetEmail } from './email/passwordReset.js';
+import { publishEmail } from './email/publishVideo.js';
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -11,35 +12,33 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // types - verify email,password forgot , password change , forgot password 
 // have same token for both work on password 
 
-export async function sendEmail(res,type,emailId,videoId){
-   //TODO: think of adding res as parameter 
-   // TODO: think of using this as a middleware 
+export async function sendEmail(res,type,emailId,videoId,videoTitle){
+
    try {
-    const user = await User.findOne({email:emailId});
    
-    if(!user) throw new ApiError(404,"User not found");
-   
-    // passanother parameter(req.body) through register and have a if statement to check it is there then send another email
+  
     if(type == "verifyEmail"){ 
+      const user = await User.findOne({email:emailId});
+   
+      if(!user) throw new ApiError(404,"User not found");
       const verificationToken = generateVerificationToken(28);
       user.verifyEmailToken = verificationToken ;
-      user.verifyEmailTokenExpiry = Date.now() + 1800000 ; // 30 minutes from now
-        // add frontend url to the button 
+      user.verifyEmailTokenExpiry = Date.now() + 1800000 ;
         const { data, error } = await resend.emails.send({
             from: "ClipSync <auth@clipsync.dhatrish.online>",
-         //TODO: before shipping make sure emailId is there
             to: emailId,
-           // to:"official.dhatrishdixit@gmail.com",
             subject: "ClipSync | Verification Email",
             html: verificationEmail(user.username,verificationToken),
           });
-          
           if(error) throw new ApiError(500,error,"mail error");
           await user.save();
       
       }
-   else if(type ="forgotPassword"){
+   else if(type =="forgotPassword"){
          //forgotPasswordToken  and  forgotPasswordTokenExpiry
+         const user = await User.findOne({email:emailId});
+   
+         if(!user) throw new ApiError(404,"User not found");
          const otp = generateOTP();
          user.forgotPasswordToken = otp;
          user.forgotPasswordTokenExpiry = Date.now() + 600000;
@@ -52,24 +51,21 @@ export async function sendEmail(res,type,emailId,videoId){
             html: passwordResetEmail(otp),
           });
          //  console.log(data);
-         //  console.log(error);
+      
          if(error) throw new ApiError(500,error,"mail error in otp");
           await user.save();
         
       }
-      else if(type ="publishVideo"){
+      else if(type =="publishVideo"){
+         console.log(JSON.stringify(videoId),videoTitle);
          const { data, error } = await resend.emails.send({
-            from: "ClipSync <auth@clipsync.dhatrish.online>",
-            //TODO: before shipping make sure emailId is there
+            from: "ClipSync <support@clipsync.dhatrish.online>",
             to: emailId,
-            //to:"official.dhatrishdixit@gmail.com",
-            subject: "ClipSync | Request for Forgot Password",
-            html: passwordResetEmail(otp),
+            subject: "ClipSync | Video Published",
+            html: publishEmail(videoId.toString(),videoTitle),
           });
-         //  console.log(data);
-         //  console.log(error);
-         if(error) throw new ApiError(500,error,"mail error in otp");
-          await user.save();
+
+         if(error) throw new ApiError(500,error,"mail error in publish video");
       }   
    } catch (error) {
       res
