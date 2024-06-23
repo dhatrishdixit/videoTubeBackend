@@ -148,6 +148,11 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
       
           const playlists = await Playlist.aggregate([
               {
+                  $match:{
+                     isPublic:true,
+                  }
+              },
+              {
                 $lookup:{
                     from:"users",
                     localField:"owner",
@@ -158,7 +163,7 @@ const getUserPlaylistsByUsername = asyncHandler(async (req, res) => {
                 $unwind:"$owner"
               },{
                  $match:{
-                    "owner.username":ownerUsername
+                    "owner.username":ownerUsername,
                  }
               },{
                 $lookup:{
