@@ -5,6 +5,7 @@ import {Like} from "../models/like.model.js"
 import {ApiError} from "../utils/ApiError.js"
 import {ApiResponse} from "../utils/ApiResponse.js"
 import {asyncHandler} from "../utils/asyncHandler.js"
+import { Tweet } from "../models/tweet.model.js"
 
 
 
@@ -93,11 +94,49 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     //  Get all the videos uploaded by the channel also the isPublic false video but also 
     const userId = req.user?._id;
     const videos = await Video.aggregate([
-        {
-           $match:{
-             owner:new mongoose.Types.ObjectId(userId)
-           }
+      {
+        $match:{
+            owner:new mongoose.Types.ObjectId(userId)
         }
+      },{
+        $lookup:{
+            from:"users",
+            localField:"owner",
+            foreignField:"_id",
+            as:"channel"
+        }
+      },{
+        $lookup:{
+            from:"likes",
+            localField:"_id",
+            foreignField:"video",
+            as:"likesCount"
+        }
+      },{
+        $unwind:"$channel"
+      },{
+        $project:{
+            _id:1,
+            videoFile:1,
+            thumbnail:1,
+            owner:1,
+            title:1,
+            duration:1,
+            views:1,
+            createdAt:1,
+            description:1,
+            channel:"$channel.username",
+            channelAvatar:"$channel.avatar",
+            channelFullName:"$channel.fullName",
+            isPublic:1,
+            likesCount:{
+                $cond: { 
+                    if: { $isArray: "$likesCount" }, 
+                    then: { $size: "$likesCount" }, 
+                    else: 0}
+            }
+        }
+      }
     ]);
     res.status(200)
     .json(
@@ -105,10 +144,62 @@ const getChannelVideos = asyncHandler(async (req, res) => {
     )
 })
 
+
+const getChannelPostsOrTweets = asyncHandler(async(req,res)=>{
+   try {
+    const ownerId = req.user?._id;
+    if(!ownerId) throw new ApiError(400,"user not logged in");
+    const posts = await Tweet.aggregate([
+       {
+         $match:{
+           owner:new mongoose.Types.ObjectId(ownerId)
+         }
+       },{
+        
+          $lookup:{
+            from:"likes",
+            localField:"_id",
+            foreignField:"tweet",
+            as:"likesCount"
+          }
+       },{
+          $project:{
+            _id:1,
+            tweet:1,
+            createdAt:1,
+            ownerId:"$owner",
+            likesCount:{
+              $cond: { 
+                  if: { $isArray: "$likesCount" }, 
+                  then: { $size: "$likesCount" }, 
+                  else: 0}
+            }
+          }
+       }
+    ]);
+
+
+    
+    res.status(200)
+    .json(
+        new ApiResponse(200,posts,"posts fetched successfully for user: ",ownerId)
+    )
+   } catch (error) {
+    res
+    .status(error.statusCode)
+    .json({
+       status:error.statusCode,
+       message:error.message
+    })
+   }
+   
+})
+
 //TODO:get channel comments 
 
 
 export {
     getChannelStats, 
-    getChannelVideos
+    getChannelVideos,
+    getChannelPostsOrTweets
     }

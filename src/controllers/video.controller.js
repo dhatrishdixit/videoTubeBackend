@@ -677,7 +677,6 @@ const channelsVideo = asyncHandler(async (req,res) => {
         const videos = await Video.aggregate([
               {
                 $match:{
-                    isPublic:true,
                     owner:new mongoose.Types.ObjectId(channelId)
                 }
               },{
@@ -686,6 +685,13 @@ const channelsVideo = asyncHandler(async (req,res) => {
                     localField:"owner",
                     foreignField:"_id",
                     as:"channel"
+                }
+              },{
+                $lookup:{
+                    from:"likes",
+                    localField:"_id",
+                    foreignField:"video",
+                    as:"likesCount"
                 }
               },{
                 $unwind:"$channel"
@@ -702,7 +708,14 @@ const channelsVideo = asyncHandler(async (req,res) => {
                     description:1,
                     channel:"$channel.username",
                     channelAvatar:"$channel.avatar",
-                    channelFullName:"$channel.fullName",                   
+                    channelFullName:"$channel.fullName",
+                    isPublic:1,
+                    likesCount:{
+                        $cond: { 
+                            if: { $isArray: "$likesCount" }, 
+                            then: { $size: "$likesCount" }, 
+                            else: 0}
+                    }
                 }
               }
         ])
