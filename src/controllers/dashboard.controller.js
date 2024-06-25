@@ -168,6 +168,7 @@ const getChannelPostsOrTweets = asyncHandler(async(req,res)=>{
             tweet:1,
             createdAt:1,
             ownerId:"$owner",
+            content:1,
             likesCount:{
               $cond: { 
                   if: { $isArray: "$likesCount" }, 
