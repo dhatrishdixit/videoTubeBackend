@@ -4,6 +4,7 @@ import {
     getChannelStats,
     getChannelVideos,
     likesAnalytics,
+    subscriptionByMonth,
     subscriptionPerDay,
     VideoInfo,
 } from "../controllers/dashboard.controller.js"
@@ -19,5 +20,6 @@ router.route("/posts").get(getChannelPostsOrTweets);
 router.route("/data/subscribers").get(subscriptionPerDay);
 router.route("/likes").get(likesAnalytics);
 router.route("/videoInfo").get(VideoInfo);
+router.route("/subscription").get(subscriptionByMonth);
 
 export default router;

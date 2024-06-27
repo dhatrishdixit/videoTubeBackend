@@ -406,7 +406,6 @@ const VideoInfo = asyncHandler(async(req,res)=>{
         }
       ])
 
-    
       res
       .status(200)
       .json(
@@ -422,6 +421,64 @@ const VideoInfo = asyncHandler(async(req,res)=>{
    }
 })
 
+const subscriptionByMonth = asyncHandler(async(req,res)=>{
+      try {
+         const userId = req.user?._id;
+         if(!userId) throw new ApiError(400,"user not logged in");
+         const subscriptionData = await Subscription.aggregate([
+          {
+              $match: {
+                  channel: new mongoose.Types.ObjectId(userId)
+              }
+          },
+          {
+              $addFields: {
+                  month: {
+                      $month: "$createdAt"
+                  },
+                  year: {
+                      $year: "$createdAt"
+                  }
+              }
+          },
+          {
+              $group: {
+                  _id: {
+                      month: "$month",
+                      year: "$year"
+                  },
+                  total: {
+                      $sum: 1
+                  }
+              }
+          },
+          {
+              $project: {
+                  month: "$_id.month",
+                  year: "$_id.year",
+                  subscriptionCount: "$total",
+                  _id: 0
+              }
+          },
+          {
+              $sort: {
+                  year: 1,
+                  month: 1
+              }
+          }
+      ]);
+      
+
+         res.status(200)
+         .json(
+          new ApiResponse(200,subscriptionData,"subscription data fetched successfully for user: ",userId)
+         )
+
+      } catch (error) {
+        console.log(error)
+      }
+})
+
 
 export {
     getChannelStats, 
@@ -429,5 +486,6 @@ export {
     getChannelPostsOrTweets,
     subscriptionPerDay,
     likesAnalytics,
-    VideoInfo
+    VideoInfo,
+    subscriptionByMonth
 }
