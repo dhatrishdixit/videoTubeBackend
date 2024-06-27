@@ -143,9 +143,8 @@ const getChannelStats = asyncHandler(async (req, res) => {
 
 const likesAnalytics = asyncHandler(async (req,res)=>{
   try {
-    
     const userId = req.user?._id;
-
+    if(!userId) throw new ApiError(404, "User not logged in");
     const totalVideoLikes = await Like.aggregate   (
       [
         {
