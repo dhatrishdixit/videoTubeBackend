@@ -10,7 +10,7 @@ import { Tweet } from "../models/tweet.model.js"
 
 
 const getChannelStats = asyncHandler(async (req, res) => {
-    // Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+
     const userId = req.user?._id;
     const totalViews = await Video.aggregate([
         {
@@ -140,6 +140,100 @@ const getChannelStats = asyncHandler(async (req, res) => {
     )
     
 }) 
+
+const likesAnalytics = asyncHandler(async (req,res)=>{
+  try {
+    
+    const userId = req.user?._id;
+
+    const totalVideoLikes = await Like.aggregate   (
+      [
+        {
+          $match: {
+            video: { $exists: true, $ne: '' }
+          }
+        },
+        {
+          $lookup: {
+            from: 'videos',
+            localField: 'video',
+            foreignField: '_id',
+            as: 'likedVideo'
+          }
+        },
+        { $unwind: { path: '$likedVideo' } },
+        {
+          $match: {
+            'likedVideo.owner': new mongoose.Types.ObjectId(
+              userId
+            )
+          }
+        }
+      ]
+    );
+    
+    const totalCommentLikes = await Like.aggregate([
+      {
+        $match: {
+          comment: { $exists: true, $ne: '' }
+        }
+      },{
+        $lookup:{
+          from:"comments",
+          localField:"comment",
+          foreignField:"_id",
+          as:"commentsLikes",
+        }
+      },{
+        $unwind:{
+          path:"$commentsLikes"
+        }
+      },{
+        $match:{
+          'commentsLikes.owner':new mongoose.Types.ObjectId(userId)
+        }
+      }
+    ])
+    const totalTweetsLikes = await Like.aggregate([
+      {
+        $match: {
+          tweet: { $exists: true, $ne: '' }
+        }
+      },{
+        $lookup:{
+          from:"tweets",
+          localField:"tweet",
+          foreignField:"_id",
+          as:"tweetsLikes",
+        }
+      },{
+        $unwind:{
+          path:"$tweetsLikes"
+        }
+      },{
+        $match:{
+          'tweetsLikes.owner':new mongoose.Types.ObjectId(userId)
+        }
+      }
+    ])
+    res.status(200)
+    .json(
+        new ApiResponse(200,{
+          totalVideoLikes:totalVideoLikes.length,
+          totalCommentLikes:totalCommentLikes.length,
+          totalTweetsLikes:totalTweetsLikes.length
+        },"Subscription")
+    )
+    
+  } catch (error) {
+    res
+    .status(error?.statusCode||500)
+    .json({
+       status:error?.statusCode||500,
+       message:error?.message||"some error in fetching like analytics"
+    })
+  }
+})
 
 const subscriptionPerDay = asyncHandler(async (req,res)=>{
   try {
@@ -274,5 +368,6 @@ export {
     getChannelStats, 
     getChannelVideos,
     getChannelPostsOrTweets,
-    subscriptionPerDay
-    }
+    subscriptionPerDay,
+    likesAnalytics
+}
