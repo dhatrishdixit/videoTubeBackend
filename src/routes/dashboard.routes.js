@@ -5,6 +5,7 @@ import {
     getChannelVideos,
     likesAnalytics,
     subscriptionPerDay,
+    VideoInfo,
 } from "../controllers/dashboard.controller.js"
 import {verifyJWT} from "../middlewares/auth.middleware.js"
 
@@ -17,5 +18,6 @@ router.route("/videos").get(getChannelVideos);
 router.route("/posts").get(getChannelPostsOrTweets);
 router.route("/data/subscribers").get(subscriptionPerDay);
 router.route("/likes").get(likesAnalytics);
+router.route("/videoInfo").get(VideoInfo);
 
 export default router;

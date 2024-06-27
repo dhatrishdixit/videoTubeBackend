@@ -360,7 +360,67 @@ const getChannelPostsOrTweets = asyncHandler(async(req,res)=>{
    
 })
 
-//TODO:get channel comments 
+const VideoInfo = asyncHandler(async(req,res)=>{
+   try {
+      const userId = req.user._id;
+      if(!userId) throw new ApiError(400,"user not logged in");
+
+      const videoInfo = await Video.aggregate([
+        {
+          $match:{
+             owner: new mongoose.Types.ObjectId(userId)
+          }
+        },{
+          $lookup:{
+            from:"likes",
+            localField:"_id",
+            foreignField:"video",
+            as:"likesCount"
+          }
+        },{
+          $lookup:{
+            from:"comments",
+            localField:"_id",
+            foreignField:"video",
+            as:"commentsCount"
+          }
+        },{
+          $project:{
+            viewsCount:"$views",
+            likesCount:{
+              $cond: { 
+                  if: { $isArray: "$likesCount" }, 
+                  then: { $size: "$likesCount" }, 
+                  else: 0
+                }
+            },
+            commentsCount:{
+              $cond:{
+                if: {$isArray: "$commentsCount"},
+                then:{$size: "$commentsCount"},
+                else:0
+              }
+            },
+            isPublic:1,
+          }
+        }
+      ])
+
+    
+      res
+      .status(200)
+      .json(
+        new ApiResponse(200,videoInfo,"video info fetched successfully for user: ",userId)
+      )
+   } catch (error) {
+    res
+    .status(error.statusCode)
+    .json({
+       status:error.statusCode,
+       message:error.message
+    })
+   }
+})
 
 
 export {
@@ -368,5 +428,6 @@ export {
     getChannelVideos,
     getChannelPostsOrTweets,
     subscriptionPerDay,
-    likesAnalytics
+    likesAnalytics,
+    VideoInfo
 }
