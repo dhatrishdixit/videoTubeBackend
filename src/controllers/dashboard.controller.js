@@ -11,10 +11,11 @@ import { Tweet } from "../models/tweet.model.js"
 
 const getChannelStats = asyncHandler(async (req, res) => {
     // Get the channel stats like total video views, total subscribers, total videos, total likes etc.
+    const userId = req.user?._id;
     const totalViews = await Video.aggregate([
         {
             $match:{
-                owner : new mongoose.Types.ObjectId(req.user?._id)
+                owner : new mongoose.Types.ObjectId(userId)
               }
         },{
             $group:
@@ -50,7 +51,7 @@ const getChannelStats = asyncHandler(async (req, res) => {
           {
             $match: {
               'likedVideo.owner': new mongoose.Types.ObjectId(
-                '65b63db59ea6a235c4b6ece1'
+                userId
               )
             }
           },
@@ -61,13 +62,62 @@ const getChannelStats = asyncHandler(async (req, res) => {
             }
           }
         ]
-     //  , { maxTimeMS: 60000, allowDiskUse: true }
+    
       );
+
+    
+
+    const totalCommentLikes = await Like.aggregate([
+      {
+        $match: {
+          comment: { $exists: true, $ne: '' }
+        }
+      },{
+        $lookup:{
+          from:"comments",
+          localField:"comment",
+          foreignField:"_id",
+          as:"commentsLikes",
+        }
+      },{
+        $unwind:{
+          path:"$commentsLikes"
+        }
+      },{
+        $match:{
+          'commentsLikes.owner':new mongoose.Types.ObjectId(userId)
+        }
+      }
+    ])
+    const totalTweetsLikes = await Like.aggregate([
+      {
+        $match: {
+          tweet: { $exists: true, $ne: '' }
+        }
+      },{
+        $lookup:{
+          from:"tweets",
+          localField:"tweet",
+          foreignField:"_id",
+          as:"tweetsLikes",
+        }
+      },{
+        $unwind:{
+          path:"$tweetsLikes"
+        }
+      },{
+        $match:{
+          'tweetsLikes.owner':new mongoose.Types.ObjectId(userId)
+        }
+      }
+    ])
+
+    const totalLikes = totalTweetsLikes.length + totalCommentLikes.length + totalVideoLikes[0].totalLikes ;
     // add total likes and total subscribers also 
     const totalSubscribers = await Subscription.aggregate([
         {
             $match:{
-               channel: new mongoose.Types.ObjectId(req.user?._id)
+               channel: new mongoose.Types.ObjectId(userId)
             }
         },{
             $group:{
@@ -82,12 +132,33 @@ const getChannelStats = asyncHandler(async (req, res) => {
     res.status(200)
     .json(
         new ApiResponse(200,{
-            totalViews:totalViews,
-            totalVideoLikes:totalVideoLikes,
-            totalSubscribers:totalSubscribers
+            totalViews:totalViews[0].totalViews,
+            totalVideos:totalViews[0].totalVideos,
+            totalLikes:totalLikes,
+            totalSubscribers:totalSubscribers[0].subscriberCount
         })
     )
     
+}) 
+
+const subscriptionPerDay = asyncHandler(async (req,res)=>{
+  try {
+    const userId = req.user?._id;
+    const subscriptionPerDay = await Subscription.aggregate([
+      {
+        $match:{
+          channel:new mongoose.Types.ObjectId(userId)
+        }
+      },
+
+    ])
+    res.status(200)
+    .json(
+        new ApiResponse(200,subscriptionPerDay,"Subscription")
+    )
+  } catch (error) {
+    console.log(error)
+  }
 })
 
 const getChannelVideos = asyncHandler(async (req, res) => {
@@ -202,5 +273,6 @@ const getChannelPostsOrTweets = asyncHandler(async(req,res)=>{
 export {
     getChannelStats, 
     getChannelVideos,
-    getChannelPostsOrTweets
+    getChannelPostsOrTweets,
+    subscriptionPerDay
     }
