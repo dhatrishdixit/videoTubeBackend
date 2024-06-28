@@ -386,6 +386,7 @@ const VideoInfo = asyncHandler(async(req,res)=>{
           }
         },{
           $project:{
+            title:1,
             viewsCount:"$views",
             likesCount:{
               $cond: { 
@@ -467,11 +468,51 @@ const subscriptionByMonth = asyncHandler(async(req,res)=>{
               }
           }
       ]);
+        
+      const date = new Date();
+      const currentMonth = date.getMonth() + 1;
+      const currentYear = date.getFullYear();
       
-
+      // Function to get all months in the past year
+      const getAllMonthsInPastYear = () => {
+          const months = [];
+          for (let i = 0; i < 12; i++) {
+              const d = new Date(date.getFullYear(), date.getMonth() - i, 1);
+              months.push({
+                  month: d.getMonth() + 1,
+                  year: d.getFullYear()
+              });
+          }
+          return months;
+      };
+      
+      // Get all months in the past year
+      const allMonths = getAllMonthsInPastYear();
+      
+      // Filter and fill in missing months
+      const dataForPastYear = allMonths.map(monthData => {
+          const existingData = subscriptionData.find(data => 
+              data.month === monthData.month && data.year === monthData.year
+          );
+      
+          return existingData || {
+              month: monthData.month,
+              year: monthData.year,
+              subscriptionCount: 0
+          };
+      });
+      
+      // Sort the data by year and month
+      dataForPastYear.sort((a, b) => {
+          if (a.year !== b.year) return b.year - a.year;
+          return b.month - a.month;
+      });
+      
+      const reversedData = dataForPastYear.reverse() 
+     
          res.status(200)
          .json(
-          new ApiResponse(200,subscriptionData,"subscription data fetched successfully for user: ",userId)
+          new ApiResponse(200,reversedData,"subscription data fetched successfully for user: ",userId)
          )
 
       } catch (error) {
