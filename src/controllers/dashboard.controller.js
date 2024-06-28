@@ -507,8 +507,15 @@ const subscriptionByMonth = asyncHandler(async(req,res)=>{
           if (a.year !== b.year) return b.year - a.year;
           return b.month - a.month;
       });
+      const months = [
+        "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+        "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+      ];
       
       const reversedData = dataForPastYear.reverse() 
+      reversedData.forEach(data => 
+        data.month = months[data.month-1]
+      )
      
          res.status(200)
          .json(
