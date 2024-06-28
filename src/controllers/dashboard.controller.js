@@ -457,7 +457,7 @@ const subscriptionByMonth = asyncHandler(async(req,res)=>{
               $project: {
                   month: "$_id.month",
                   year: "$_id.year",
-                  subscriptionCount: "$total",
+                  SubscriptionsByMonth: "$total",
                   _id: 0
               }
           },
@@ -498,7 +498,7 @@ const subscriptionByMonth = asyncHandler(async(req,res)=>{
           return existingData || {
               month: monthData.month,
               year: monthData.year,
-              subscriptionCount: 0
+              SubscriptionsByMonth: 0
           };
       });
       
