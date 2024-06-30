@@ -12,24 +12,23 @@ import { generateVerificationToken } from '../utils/generateTokens.js';
 
 
 const accessTokenCookieOptions = {
-    httpOnly:true,
-    secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
-    SameSite:process.env.NODE_ENV === "PRODUCTION" ? "None":"Lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "PRODUCTION",
+    sameSite: process.env.NODE_ENV === "PRODUCTION" ? "None" : "Lax",
     expires: new Date(
-        Date.now() + process.env.ACCESS_TOKEN_COOKIE_EXPIRY * 24 * 60 * 60 * 1000
-      ),
-       //Cookie Expire is in days so we convert it in milliseconds to add it to date
+        Date.now() + Number(process.env.ACCESS_TOKEN_COOKIE_EXPIRY) * 24 * 60 * 60 * 1000
+    ),
 }
 
 const refreshTokenCookieOptions = {
-    httpOnly:true,
-    secure:process.env.NODE_ENV === "PRODUCTION" ?true:false,
-    SameSite:process.env.NODE_ENV === "PRODUCTION" ? "None":"Lax",
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "PRODUCTION",
+    sameSite: process.env.NODE_ENV === "PRODUCTION" ? "None" : "Lax",
     expires: new Date(
-        Date.now() + process.env.REFRESH_TOKEN_COOKIE_EXPIRY * 24 * 60 * 60 * 1000
-      ),
-
+        Date.now() + Number(process.env.REFRESH_TOKEN_COOKIE_EXPIRY) * 24 * 60 * 60 * 1000
+    ),
 }
+
 
 // const options = {
 //     httpOnly: true ,
