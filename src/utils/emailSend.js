@@ -68,6 +68,7 @@ export async function sendEmail(res,type,emailId,videoId,videoTitle){
          if(error) throw new ApiError(500,error,"mail error in publish video");
       }   
    } catch (error) {
+      console.log(toString(error));
       res
       .status(error?.statusCode||500)
       .json({
