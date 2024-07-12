@@ -201,9 +201,10 @@ try {
                 $unwind:{
                     path:"$video.owner"
                 }
-            },{
+            }, {
                 $project:{
                     _id:"$_id",
+                    videoId:"$video._id",
                     videoFile:"$video.videoFile",
                     thumbnail:"$video.thumbnail",
                     title:"$video.title",
@@ -215,11 +216,12 @@ try {
                     channelFullName:"$video.owner.fullName",
                     channelAvatar:"$video.owner.avatar",
                     channelId:"$video.owner._id"
-
+    
                 }
             }
         ])
-    
+       
+
         if(likedVideos.length == 0){
             return res.status(200)
             .json(
