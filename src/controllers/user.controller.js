@@ -12,6 +12,9 @@ import { generateVerificationToken } from '../utils/generateTokens.js';
 
 
 const accessTokenCookieOptions = {
+    // httpOnly protects from XSS (Cross Site Scripting ) attacks , as it makes our cookie inaccessible via client side javascript injection 
+    // sameSite protects from CSRF ( Cross Site Request Forgery ) attacks , i.e. when cookie is stored in client web browser it can be directly attached to a request from someother site and used maliciously so sameSite prevents attaching from different domains 
+    
     httpOnly: true,
     secure: process.env.NODE_ENV === "PRODUCTION",
     sameSite: process.env.NODE_ENV === "PRODUCTION" ? "None" : "Lax",
