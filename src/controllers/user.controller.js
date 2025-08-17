@@ -15,6 +15,15 @@ const accessTokenCookieOptions = {
     // httpOnly protects from XSS (Cross Site Scripting ) attacks , as it makes our cookie inaccessible via client side javascript injection 
     // sameSite protects from CSRF ( Cross Site Request Forgery ) attacks , i.e. when cookie is stored in client web browser it can be directly attached to a request from someother site and used maliciously so sameSite prevents attaching from different domains 
     
+
+    // more refined statements - 
+    // HttpOnly protects from XSS by making cookies inaccessible to client-side JavaScript.
+//   (Even if an attacker injects JS, they cannot read or steal the cookie value.)
+
+// SameSite helps protect from CSRF by controlling when cookies are sent with cross-site requests.
+//   (It prevents cookies from being auto-attached to requests coming from other domains,
+//    unless SameSite=None is explicitly set.)
+
     httpOnly: true,
     secure: process.env.NODE_ENV === "PRODUCTION",
     sameSite: process.env.NODE_ENV === "PRODUCTION" ? "None" : "Lax",
